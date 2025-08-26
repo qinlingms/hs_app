@@ -1,89 +1,105 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class MtlsSeparateCertsClient {
+class MtlsHttpClient {
+  final String rootCertPath;
+  final String clientCertPath;
+  final String clientKeyPath;
   final String baseUrl;
-  final String rootCertPath;       // 根证书路径
-  final String clientCertPath;     // 客户端证书路径
-  final String clientKeyPath;      // 客户端私钥路径
-  final String keyPasswordKey;     // 私钥密码存储键名（如果私钥有密码）
-  final Dio _dio = Dio();
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-
-  MtlsSeparateCertsClient({
-    required this.baseUrl,
+  MtlsHttpClient({
     required this.rootCertPath,
     required this.clientCertPath,
     required this.clientKeyPath,
-    required this.keyPasswordKey,
-  }) {
-    _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 10);
-    _dio.options.receiveTimeout = const Duration(seconds: 10);
+    required this.baseUrl,
+  });
+  // 加载证书文件（从assets中读取）
+  Future<SecurityContext> createSecurityContext() async {
+    final context = SecurityContext(withTrustedRoots: false);
+
+    // 1. 加载服务器CA证书（用于验证服务器）
+    final serverCaBytes = await _loadAsset(rootCertPath);
+    context.setTrustedCertificatesBytes(serverCaBytes);
+
+    // 2. 加载客户端证书和私钥（用于服务器验证客户端）
+    // 方式一：分别加载PEM格式的证书和私钥
+    final clientCertBytes = await _loadAsset(clientCertPath);
+    final clientKeyBytes = await _loadAsset(clientKeyPath);
+    context.useCertificateChainBytes(clientCertBytes);
+    context.usePrivateKeyBytes(clientKeyBytes);
+
+    // 方式二：加载PKCS12格式的证书（如果是.p12/.pfx文件）
+    // final p12Bytes = await _loadAsset('assets/cert/client.p12');
+    // context.useCertificateChainBytes(p12Bytes, password: '证书密码');
+    // context.usePrivateKeyBytes(p12Bytes, password: '证书密码');
+
+    return context;
   }
 
-  // 初始化私钥密码（如果私钥有密码保护）
-  Future<void> initializeKeyPassword(String password) async {
-    await _secureStorage.write(key: keyPasswordKey, value: password);
-  }
-
-  // 加载证书文件内容
-  Future<List<int>> _loadCertificate(String assetPath) async {
-    final byteData = await rootBundle.load(assetPath);
+  // 从assets加载证书字节
+  Future<Uint8List> _loadAsset(String path) async {
+    // 确保在pubspec.yaml中配置了assets
+    // assets:
+    //   - assets/cert/
+    final byteData = await rootBundle.load(path);
     return byteData.buffer.asUint8List();
   }
 
-  // 配置双向SSL并获取Dio实例
-  Future<Dio> _getSecureDio() async {
-    // 1. 加载所有证书
-    final rootCertBytes = await _loadCertificate(rootCertPath);
-    final clientCertBytes = await _loadCertificate(clientCertPath);
-    final clientKeyBytes = await _loadCertificate(clientKeyPath);
-    
-    // 获取私钥密码（如果有）
-    final keyPassword = await _secureStorage.read(key: keyPasswordKey);
+  // 创建支持mTLS的Dio客户端
+  Future<Dio> createDioClient() async {
+    final context = await createSecurityContext();
+    final httpClient = HttpClient(context: context);
 
-    // 2. 创建安全上下文
-    final securityContext = SecurityContext(withTrustedRoots: false);
-    
-    // 3. 添加根证书（用于验证服务器证书）
-    securityContext.setTrustedCertificatesBytes(rootCertBytes);
-    
-    // 4. 添加客户端证书和私钥（供服务器验证）
-    securityContext.useCertificateChainBytes(clientCertBytes);
-    securityContext.usePrivateKeyBytes(
-      clientKeyBytes,
-      password: keyPassword, // 如果私钥没有密码，可以传null
+    // 可选：禁用证书主机名验证（仅开发环境使用！）
+    // httpClient.badCertificateCallback = (cert, host, port) => true;
+
+    final dio = Dio();
+    dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () => httpClient,
     );
 
-    // 5. 配置Dio的HTTP客户端适配器
-    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-      final client = HttpClient(context: securityContext);
-      // 生产环境必须保持false，确保严格验证证书
-      client.badCertificateCallback = (cert, host, port) => false;
-      return client;
-    };
-
-    return _dio;
+    return dio;
   }
 
-  // 发送GET请求
-  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
-    final dio = await _getSecureDio();
-    return dio.get(path, queryParameters: queryParameters);
+  // 示例请求
+  Future<void> get() async {
+    try {
+      final dio = await createDioClient();
+      final response = await dio.get('https://你的服务器地址/api');
+      print('请求成功: ${response.data}');
+    } on HandshakeException catch (e) {
+      print('握手失败: $e');
+      // 常见原因：证书不匹配、CA未信任、客户端证书未正确配置
+    } on DioException catch (e) {
+      print('请求错误: ${e.message}');
+    }
   }
 
-  // 发送POST请求
-  Future<Response> post(String path, {dynamic data}) async {
-    final dio = await _getSecureDio();
-    return dio.post(path, data: data);
-  }
-
-  // 清理私钥密码
-  Future<void> clearKeyPassword() async {
-    await _secureStorage.delete(key: keyPasswordKey);
+  Future<Response?> post(String uri, {Map<String, dynamic> data = const {}}) async {
+    try {
+      final dio = await createDioClient();
+      dio.options.headers = {
+        "X-UUID": "11111",
+        "X-SESSIONID": "sdfsdfs",
+        "X-SIGN": "xxx",
+      };
+      Map<String, dynamic> dataObj = {
+        "appVer": "v0.0.1",
+        "resId": "111",
+        "timeStamp": DateTime.now().microsecond / 1000,
+        "data": data,
+      };
+      final response = await dio.post(baseUrl + uri, data: dataObj);
+      print('请求成功: ${response.data}');
+      return response;
+    } on HandshakeException catch (e) {
+      print('握手失败: $e');
+      // 常见原因：证书不匹配、CA未信任、客户端证书未正确配置
+    } on DioException catch (e) {
+      print('请求错误: ${e.message}');
+    }
+    return null;
   }
 }
