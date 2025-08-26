@@ -60,7 +60,7 @@ class MtlsHttpClient {
     final context = await createSecurityContext();
     final httpClient = HttpClient(context: context);
     // 可选：禁用证书主机名验证（仅开发环境使用！）
-    // httpClient.badCertificateCallback = (cert, host, port) => true;
+    httpClient.badCertificateCallback = (cert, host, port) => false;
     final dio = Dio()
     ..httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () => httpClient,
