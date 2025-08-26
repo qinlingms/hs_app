@@ -13,11 +13,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        color: Colors.blue,
-      ),
-    );
+    return Scaffold(body: Container(color: Colors.blue));
   }
 
   @override
@@ -25,11 +21,24 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     MtlsHttpClient client = getIt<MtlsHttpClient>();
 
-    Future<Response?> future = client.post("/api/v1/internal/app/share");
-    future.then((response) {
-      print("请求成功：${response!.data}");
-    }).catchError((error) {
-      print("请求失败：$error");
-    });
+    Map<String, dynamic> dataObj = {
+      "appVer": "v0.0.1",
+      "resId": "111",
+      "timeStamp": DateTime.now().millisecondsSinceEpoch / 1000,
+      "data": {},
+    };
+    Map<String, String> headers = {"X-UUID": "11111"};
+    Future<Response?> future = client.post(
+      "/api/v1/login/anonymous",
+      headers: headers,
+      data: dataObj,
+    );
+    future
+        .then((response) {
+          print("请求成功：$response");
+        })
+        .catchError((error) {
+          print("请求失败：$error");
+        });
   }
 }
