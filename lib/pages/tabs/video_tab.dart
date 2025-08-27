@@ -1,43 +1,224 @@
-import 'package:app_hs/pages/widgets/grid_section_widget.dart';
 import 'package:flutter/material.dart';
 
-class VideoTab extends StatelessWidget {
+class VideoTab extends StatefulWidget {
   const VideoTab({super.key});
+
+  @override
+  State<VideoTab> createState() => _VideoTabState();
+}
+
+class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
+  late TabController _tabController;
   
-  final List<Map<String, dynamic>> _videoItems = const [
-    {'title': '最新电影', 'color': Colors.red, 'icon': Icons.movie},
-    {'title': '热播剧集', 'color': Colors.blue, 'icon': Icons.tv},
-    {'title': '综艺节目', 'color': Colors.orange, 'icon': Icons.theater_comedy},
-    {'title': '纪录片', 'color': Colors.green, 'icon': Icons.nature_people},
-    {'title': '动漫', 'color': Colors.purple, 'icon': Icons.animation},
-    {'title': '短视频', 'color': Colors.pink, 'icon': Icons.video_library},
-  ];
+  final List<String> _tabs = ['推荐', '最新', '最热', '10分钟+'];
   
-  final List<Map<String, dynamic>> _categoryItems = const [
-    {'title': '动作片', 'color': Colors.red, 'icon': Icons.local_fire_department},
-    {'title': '喜剧片', 'color': Colors.yellow, 'icon': Icons.sentiment_very_satisfied},
-    {'title': '爱情片', 'color': Colors.pink, 'icon': Icons.favorite},
-    {'title': '科幻片', 'color': Colors.blue, 'icon': Icons.rocket_launch},
+  final List<Map<String, dynamic>> _videoList = [
+    {
+      'title': '国内AV91 穿着T背教学的茄子中出钢琴老师#Tangtang',
+      'thumbnail': 'https://via.placeholder.com/300x200',
+      'duration': '0:40:12',
+      'views': '2231',
+    },
+    {
+      'title': '国产AV电影TM0109神母-孟若羽',
+      'thumbnail': 'https://via.placeholder.com/300x200',
+      'duration': '0:43:20',
+      'views': '1231',
+    },
+    {
+      'title': '视频名字视频名字视频名字视频名字',
+      'thumbnail': 'https://via.placeholder.com/300x200',
+      'duration': '1:20:20',
+      'views': '1231',
+    },
+    {
+      'title': '视频名字视频名字视频名字视频名字视频名字',
+      'thumbnail': 'https://via.placeholder.com/300x200',
+      'duration': '1:20:20',
+      'views': '1231',
+    },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            '视频内容',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+        // 顶部Tab栏
+        Container(
+          color: Colors.white,
+          child: TabBar(
+            controller: _tabController,
+            tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
+            labelColor: Colors.red,
+            unselectedLabelColor: Colors.black54,
+            indicatorColor: Colors.red,
+            indicatorWeight: 2,
+            labelStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
             ),
           ),
         ),
-        GridSectionWidget(title: '热门影片', items: _videoItems),
-        const SizedBox(height: 24),
-        GridSectionWidget(title: '分类推荐', items: _categoryItems),
+        // 视频内容区域 - 使用固定高度而不是Expanded
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6, // 使用屏幕高度的60%
+          child: TabBarView(
+            controller: _tabController,
+            children: _tabs.map((tab) => _buildVideoGrid()).toList(),
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildVideoGrid() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.75,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemCount: _videoList.length * 2, // 重复显示以填充更多内容
+        itemBuilder: (context, index) {
+          final video = _videoList[index % _videoList.length];
+          return _buildVideoItem(video);
+        },
+      ),
+    );
+  }
+
+  Widget _buildVideoItem(Map<String, dynamic> video) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 视频缩略图
+          Expanded(
+            flex: 3,
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                color: Colors.grey[300],
+              ),
+              child: Stack(
+                children: [
+                  // 缩略图占位
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                      color: Colors.grey[300],
+                    ),
+                    child: const Icon(
+                      Icons.play_circle_outline,
+                      size: 40,
+                      color: Colors.white,
+                    ),
+                  ),
+                  // 播放次数
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.play_arrow,
+                            color: Colors.white,
+                            size: 12,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            video['views'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // 视频时长
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        video['duration'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // 视频标题
+          Expanded(
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                video['title'],
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
