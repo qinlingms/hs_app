@@ -1,0 +1,15 @@
+lib/pages/
+├── video_platform_page.dart          # 主页面（保留顶部和底部导航）
+├── tabs/                              # 各个tab页面
+│   ├── recommend_tab.dart             # 推荐tab
+│   ├── game_tab.dart                  # 游戏tab
+│   ├── social_tab.dart                # 交友tab
+│   ├── live_tab.dart                  # 直播tab
+│   ├── video_tab.dart                 # 看片tab
+│   ├── category_tab.dart              # 分类tab（底部导航）
+│   ├── gift_tab.dart                  # 赠礼tab（底部导航）
+│   └── profile_tab.dart               # 我的tab（底部导航）
+└── widgets/                           # 通用组件
+    ├── banner_widget.dart             # 轮播图组件
+    ├── grid_section_widget.dart       # 网格布局组件
+    └── promotion_banners_widget.dart  # 推广横幅组件
