@@ -1,6 +1,8 @@
 import 'package:html/parser.dart' show parse;
 import 'package:html/dom.dart';
 
+import '../log/logger.dart';
+
 class HtmlFirstHrefExtractor {
   // 从 HTML 字符串中提取【第一个】a 标签的 href 属性
   // 返回值：成功则返回 href 字符串，无 a 标签/无 href 则返回 null
@@ -18,7 +20,7 @@ class HtmlFirstHrefExtractor {
         return (href?.isNotEmpty ?? false) ? href : null;
       }
     } catch (e) {
-      print("解析 HTML 失败：$e");
+      logger.e("解析 HTML 失败：$e");
     }
     
     // 无 a 标签/解析失败/无 href 时返回 null

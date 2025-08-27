@@ -1,6 +1,8 @@
 // Base64工具类
 import 'dart:convert';
 
+import '../log/logger.dart';
+
 class Base64Utils {
   // 解密为字符串
   static String? decodeToString(String base64Str) {
@@ -8,7 +10,7 @@ class Base64Utils {
       List<int> bytes = base64.decode(base64Str);
       return utf8.decode(bytes);
     } catch (e) {
-      print("解密失败：$e");
+      logger.e("解密失败：$e");
       return null;
     }
   }
@@ -18,7 +20,7 @@ class Base64Utils {
     try {
       return base64.decode(base64Str);
     } catch (e) {
-      print("解密失败：$e");
+      logger.e("解密失败：$e");
       return null;
     }
   }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:app_hs/log/logger.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/services.dart';
@@ -21,7 +22,7 @@ class MtlsHttpClient {
     // 1. 加载服务器CA证书（用于验证服务器）
     final serverCaBytes = await _loadAsset(rootCertPath);
     context.setTrustedCertificatesBytes(serverCaBytes);
-    print('服务器CA证书加载成功，长度: ${serverCaBytes.length}');
+    logger.d('服务器CA证书加载成功，长度: ${serverCaBytes.length}');
     if (serverCaBytes.isEmpty) {
       throw Exception('服务器CA证书为空，请检查文件');
     }
@@ -31,11 +32,13 @@ class MtlsHttpClient {
     if (clientCertBytes.isEmpty) {
       throw Exception('客户端证书为空，请检查文件');
     }
+    logger.d('客户端证书加载成功，长度: ${clientCertBytes.length}');
+    context.useCertificateChainBytes(clientCertBytes);
     final clientKeyBytes = await _loadAsset(clientKeyPath);
     if (clientKeyBytes.isEmpty) {
       throw Exception('客户端私钥为空，请检查文件');
     }
-    context.useCertificateChainBytes(clientCertBytes);
+    logger.d('客户端私钥加载成功，长度: ${clientKeyBytes.length}');
     context.usePrivateKeyBytes(clientKeyBytes);
 
     // 方式二：加载PKCS12格式的证书（如果是.p12/.pfx文件）
@@ -61,27 +64,26 @@ class MtlsHttpClient {
     final httpClient = HttpClient(context: context);
     // 可选：禁用证书主机名验证（仅开发环境使用！）
     httpClient.badCertificateCallback = (cert, host, port) => false;
-    final dio = Dio()
-    ..httpClientAdapter = IOHttpClientAdapter(
-      createHttpClient: () => httpClient,
-    )
-    ..options.headers = {
-      'Content-Type': 'application/json',
-    };
+    final dio =
+        Dio()
+          ..httpClientAdapter = IOHttpClientAdapter(
+            createHttpClient: () => httpClient,
+          )
+          ..options.headers = {'Content-Type': 'application/json'};
     return dio;
   }
 
   // 示例请求
-  Future<void> get() async {
+  Future<void> get(String url) async {
     try {
       final dio = await createDioClient();
-      final response = await dio.get('https://你的服务器地址/api');
-      print('请求成功: ${response.data}');
+      final response = await dio.get(baseUrl + url);
+      logger.d('请求成功: ${response.data}');
     } on HandshakeException catch (e) {
-      print('握手失败: $e');
+      logger.e('握手失败: $e');
       // 常见原因：证书不匹配、CA未信任、客户端证书未正确配置
     } on DioException catch (e) {
-      print('请求错误: ${e.message}');
+      logger.e('请求错误: ${e.message}');
     }
   }
 

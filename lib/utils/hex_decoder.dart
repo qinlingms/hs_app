@@ -1,6 +1,8 @@
 // Hex 解码工具类
 import 'dart:convert';
 
+import '../log/logger.dart';
+
 class HexDecoder {
   // 1. 将 Hex 字符串解码为字节数组（List<int>）
   static List<int>? decodeToBytes(String hexString) {
@@ -38,7 +40,7 @@ class HexDecoder {
     try {
       return utf8.decode(bytes); // 字节数组转 UTF-8 字符串
     } catch (e) {
-      print("Hex 解码为字符串失败（非 UTF-8 编码）：$e");
+      logger.e("Hex 解码为字符串失败（非 UTF-8 编码）：$e");
       return null;
     }
   }

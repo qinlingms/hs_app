@@ -1,4 +1,5 @@
 import 'package:app_hs/http/mtls_http_client.dart';
+import 'package:app_hs/log/logger.dart';
 import 'package:app_hs/service_locator.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -35,10 +36,10 @@ class _HomePageState extends State<HomePage> {
     );
     future
         .then((response) {
-          print("请求成功：$response");
+          logger.d("请求成功：$response");
         })
         .catchError((error) {
-          print("请求失败：$error");
+          logger.d("请求失败：$error");
         });
   }
 }
