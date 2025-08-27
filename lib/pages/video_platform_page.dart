@@ -371,7 +371,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
 
   AppBar _buildProfileAppBar() {
     return AppBar(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       elevation: 0,
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -397,7 +397,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
           const Text(
             '用户昵称',
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -423,11 +423,11 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
       centerTitle: false,
       actions: [
         IconButton(
-          icon: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+          icon: const Icon(Icons.chat_bubble_outline, color: Colors.black),
           onPressed: () {},
         ),
         IconButton(
-          icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
+          icon: const Icon(Icons.camera_alt_outlined, color: Colors.black),
           onPressed: () {},
         ),
       ],
