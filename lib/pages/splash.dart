@@ -6,6 +6,7 @@ import 'package:app_hs/utils/aes_decryptor.dart';
 import 'package:app_hs/utils/base64.dart';
 import 'package:app_hs/utils/hex_decoder.dart';
 import 'package:app_hs/utils/html_first_href_extractor.dart';
+import 'package:app_hs/utils/http_request_header.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -43,11 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
       final response = await Dio().get(
         "http://c1.ysepan.com/f_ht/ajcx/wj.aspx?cz=dq&jsq=0&mlbh=1821707&wjpx=1&_dlmc=lplkkdiee&_dlmm=e10adc3949",
         options: Options(
-          headers: {
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, likeGecko) Chrome/129.0.0.0 Safari/537.36',
-            'Referer': 'http://c1.ysepan.com',
-          },
+          headers: HttpRequestHeader.getNormalHeader(),
         ),
       );
       String input = response.data;

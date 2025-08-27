@@ -11,13 +11,13 @@ class HexDecoder {
     
     // 校验长度是否为偶数
     if (cleaned.length % 2 != 0) {
-      print("Hex 字符串长度必须为偶数");
+      logger.e("Hex 字符串长度必须为偶数");
       return null;
     }
     
     // 校验是否包含非法字符
     if (!RegExp(r'^[0-9a-f]+$').hasMatch(cleaned)) {
-      print("Hex 字符串包含非法字符（仅允许 0-9、a-f、A-F）");
+      logger.e("Hex 字符串包含非法字符（仅允许 0-9、a-f、A-F）");
       return null;
     }
     
