@@ -7,7 +7,6 @@ import 'tabs/social_tab.dart';
 import 'tabs/live_tab.dart';
 import 'tabs/video_tab.dart';
 import 'tabs/category_tab.dart';
-import 'tabs/gift_tab.dart';
 import 'tabs/profile_tab.dart';
 import 'widgets/banner_widget.dart';
 
@@ -99,8 +98,6 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
       case 2:
         return const CategoryTab();
       case 3:
-        return const GiftTab();
-      case 4:
         return const ProfileTab();
       default:
         return _buildMainContent();
@@ -202,10 +199,6 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
             label: '分类',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: '赠礼',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: '我的',
           ),
@@ -254,75 +247,6 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
         ),
       ),
       centerTitle: true,
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(48),
-        child: Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            // 这里可以添加切换到分类tab的逻辑
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '分类',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            // 这里可以添加切换到女优tab的逻辑
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '女优',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
   AppBar _buildDefaultAppBar() {

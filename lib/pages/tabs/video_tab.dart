@@ -78,7 +78,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
         ),
         // 视频内容区域 - 使用固定高度而不是Expanded
         SizedBox(
-          height: MediaQuery.of(context).size.height * 0.6, // 使用屏幕高度的60%
+          height: MediaQuery.of(context).size.height, // 使用屏幕高度的60%
           child: TabBarView(
             controller: _tabController,
             children: _tabs.map((tab) => _buildVideoGrid()).toList(),
