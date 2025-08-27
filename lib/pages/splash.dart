@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
 import 'package:app_hs/http/resp.dart';
-import 'package:app_hs/pages/login_page.dart';
 import 'package:app_hs/pages/video_platform_page.dart';
 import 'package:app_hs/service/device_identifier_service.dart';
 import 'package:app_hs/service_locator.dart';
@@ -99,8 +98,8 @@ class _SplashScreenState extends State<SplashScreen> {
       setupMtlsService(decryptedData);
       return true;
       // 初始化服务定位器
-    } on Exception catch (_) {
-      //print("请求出错：${e.toString()}");
+    } on Exception catch (e) {
+      logger.e("请求出错：$e");
     }
     return false;
   }
@@ -117,8 +116,8 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  void setupService(){
-        getIt.registerLazySingleton<DeviceIdentifierService>(
+  void setupService() {
+    getIt.registerLazySingleton<DeviceIdentifierService>(
       () => DeviceIdentifierService(),
     );
   }
@@ -129,8 +128,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Future<ApiResponse?> resp = client.post(
       Api.firstLaunch,
       headers: HttpRequestHeader.getNormalHeader(),
-      data: 
-      {"os": "ios", "brand": "Iphone"},
+      data: {"os": "ios", "brand": "Iphone"},
     );
     resp.then((value) {
       if (value == null || value.code != 200) {
@@ -163,9 +161,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToHome() {
     Navigator.pushReplacement(
       context,
-      //MaterialPageRoute(builder: (context) => const HomePage()),
-      //MaterialPageRoute(builder: (context) => const VideoPlatformPage()),
-      MaterialPageRoute(builder: (context) => const LoginPage()),
+      MaterialPageRoute(builder: (context) => const VideoPlatformPage()),
     );
   }
 

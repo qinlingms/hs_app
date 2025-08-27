@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
-import 'register_page.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _accountController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _inviteCodeController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
   void dispose() {
     _accountController.dispose();
     _passwordController.dispose();
+    _inviteCodeController.dispose();
     super.dispose();
   }
 
@@ -136,16 +137,52 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             
+            const SizedBox(height: 20),
+            
+            // 邀请码输入框
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _inviteCodeController,
+                decoration: const InputDecoration(
+                  hintText: 'sdfsdfs',
+                  hintStyle: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16,
+                  ),
+                  prefixText: '邀请码  ',
+                  prefixStyle: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+            ),
+            
             const SizedBox(height: 40),
             
-            // 立即登录按钮
+            // 立即注册按钮
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  // 处理登录逻辑
-                  _handleLogin();
+                  _handleRegister();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple[700],
@@ -156,35 +193,7 @@ class _LoginPageState extends State<LoginPage> {
                   elevation: 0,
                 ),
                 child: const Text(
-                  '立即登录',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 注册账号按钮
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton(
-                onPressed: () {
-                  // 处理注册逻辑
-                  _handleRegister();
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  side: const BorderSide(color: Colors.black, width: 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  '注册账号',
+                  '立即注册',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -194,31 +203,16 @@ class _LoginPageState extends State<LoginPage> {
             ),
             
             const SizedBox(height: 60),
-            
-            // 修改密码链接
-            TextButton(
-              onPressed: () {
-                // 处理修改密码逻辑
-                _handleForgotPassword();
-              },
-              child: const Text(
-                '修改密码',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  void _handleLogin() {
+  void _handleRegister() {
     String account = _accountController.text.trim();
     String password = _passwordController.text.trim();
+    String inviteCode = _inviteCodeController.text.trim();
     
     if (account.isEmpty) {
       _showMessage('请输入账号');
@@ -230,20 +224,13 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
     
-    // TODO: 实现登录逻辑
-    _showMessage('登录功能待实现');
-  }
-  
-  void _handleRegister() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const RegisterPage()),
-    );
-  }
-  
-  void _handleForgotPassword() {
-    // TODO: 跳转到修改密码页面
-    _showMessage('修改密码功能待实现');
+    if (inviteCode.isEmpty) {
+      _showMessage('请输入邀请码');
+      return;
+    }
+    
+    // TODO: 实现注册逻辑
+    _showMessage('注册功能待实现');
   }
   
   void _showMessage(String message) {
