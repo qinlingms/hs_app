@@ -63,7 +63,9 @@ class MtlsHttpClient {
     final context = await createSecurityContext();
     final httpClient = HttpClient(context: context);
     // 可选：禁用证书主机名验证（仅开发环境使用！）
-    httpClient.badCertificateCallback = (cert, host, port) => false;
+    // 开发环境下直接返回true跳过验证
+    // 生产环境绝对禁止！
+    httpClient.badCertificateCallback = (cert, host, port) => true;
     final dio =
         Dio()
           ..httpClientAdapter = IOHttpClientAdapter(
@@ -74,17 +76,20 @@ class MtlsHttpClient {
   }
 
   // 示例请求
-  Future<void> get(String url) async {
+  Future<Response?> get(String uri) async {
     try {
       final dio = await createDioClient();
-      final response = await dio.get(baseUrl + url);
+      logger.d("get request url: $baseUrl$uri");
+      final response = await dio.get(baseUrl+uri);
       logger.d('请求成功: ${response.data}');
+      return response;
     } on HandshakeException catch (e) {
       logger.e('握手失败: $e');
       // 常见原因：证书不匹配、CA未信任、客户端证书未正确配置
     } on DioException catch (e) {
       logger.e('请求错误: ${e.message}');
     }
+    return null;
   }
 
   Future<Response?> post(
@@ -94,7 +99,7 @@ class MtlsHttpClient {
   }) async {
     try {
       final dio = await createDioClient();
-      print("url: $baseUrl$uri");
+      logger.d("post request url: $baseUrl$uri");
       final response = await dio.post(
         baseUrl + uri,
         options: Options(headers: headers),
@@ -102,10 +107,10 @@ class MtlsHttpClient {
       );
       return response;
     } on HandshakeException catch (e) {
-      print('握手失败: $e');
+      logger.e('握手失败: $e');
       // 常见原因：证书不匹配、CA未信任、客户端证书未正确配置
     } on DioException catch (e) {
-      print('请求错误: $e');
+      logger.e('请求错误: $e');
     }
     return null;
   }

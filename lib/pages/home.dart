@@ -21,11 +21,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     MtlsHttpClient client = getIt<MtlsHttpClient>();
-
     Map<String, dynamic> dataObj = {
       "appVer": "v0.0.1",
       "resId": "111",
-      "timeStamp": DateTime.now().millisecondsSinceEpoch / 1000,
+      "timeStamp": DateTime.now().millisecondsSinceEpoch ~/ 1000,
       "data": {},
     };
     Map<String, String> headers = {"X-UUID": "11111"};
