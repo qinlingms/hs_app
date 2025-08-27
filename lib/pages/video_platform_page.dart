@@ -14,6 +14,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
   int _currentBannerIndex = 0;
   late PageController _bannerPageController;
   late Timer _bannerTimer;
+  bool _isRefreshing = false;
   
   final List<String> _tabTitles = ['推荐', '游戏', '交友', '直播', '看片'];
   
@@ -476,6 +477,65 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
     );
   }
 
+  // 添加刷新方法
+  Future<void> _onRefresh() async {
+    setState(() {
+      _isRefreshing = true;
+    });
+    
+    logger.d('开始下拉刷新');
+    
+    try {
+      // 模拟网络请求延迟
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // 重置轮播图到第一张
+      _currentBannerIndex = 0;
+      if (_bannerPageController.hasClients) {
+        _bannerPageController.animateToPage(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+      
+      // 这里可以添加实际的数据刷新逻辑
+      // 比如重新请求轮播图数据、游戏列表数据等
+      
+      logger.d('下拉刷新完成');
+      
+      // 显示刷新成功提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('刷新成功'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      logger.e('下拉刷新失败: $e');
+      
+      // 显示刷新失败提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('刷新失败，请重试'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    }
+  }
+  
   // 为每个标签页创建不同的内容
   Widget _buildTabContent() {
     switch (_selectedIndex) {
@@ -617,63 +677,71 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // 顶部横幅
-            _buildBannerSection(),
-            
-            // 标签栏
-            Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: _tabTitles.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    String title = entry.value;
-                    bool isSelected = index == _selectedIndex;
-                    
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedIndex = index;
-                        });
-                        logger.d('切换到标签页: $title (索引: $index)');
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        margin: const EdgeInsets.only(right: 16),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.red : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected ? Colors.red : Colors.grey,
-                            width: 1,
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: Colors.red,
+        backgroundColor: Colors.white,
+        strokeWidth: 2.0,
+        displacement: 40.0,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              // 顶部横幅
+              _buildBannerSection(),
+              
+              // 标签栏
+              Container(
+                height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _tabTitles.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      String title = entry.value;
+                      bool isSelected = index == _selectedIndex;
+                      
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = index;
+                          });
+                          logger.d('切换到标签页: $title (索引: $index)');
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          margin: const EdgeInsets.only(right: 16),
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.red : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected ? Colors.red : Colors.grey,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
                           ),
                         ),
-                        child: Text(
-                          title,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // 根据选中的标签显示不同内容
-            _buildTabContent(),
-            
-            const SizedBox(height: 100), // 底部间距
-          ],
+              
+              const SizedBox(height: 16),
+              
+              // 根据选中的标签显示不同内容
+              _buildTabContent(),
+              
+              const SizedBox(height: 100), // 底部间距
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
