@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
 import 'package:app_hs/http/resp.dart';
+import 'package:app_hs/pages/login_page.dart';
 import 'package:app_hs/pages/video_platform_page.dart';
 import 'package:app_hs/service/device_identifier_service.dart';
 import 'package:app_hs/service_locator.dart';
@@ -163,7 +164,8 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.pushReplacement(
       context,
       //MaterialPageRoute(builder: (context) => const HomePage()),
-      MaterialPageRoute(builder: (context) => const VideoPlatformPage()),
+      //MaterialPageRoute(builder: (context) => const VideoPlatformPage()),
+      MaterialPageRoute(builder: (context) => const LoginPage()),
     );
   }
 
