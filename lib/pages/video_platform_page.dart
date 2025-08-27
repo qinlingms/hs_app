@@ -166,7 +166,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bottomNavIndex == 4 ? Colors.black : Colors.grey[100],
-      appBar: _bottomNavIndex == 4 ? _buildProfileAppBar() : _buildDefaultAppBar(),
+      appBar: _getAppBar(),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         color: Colors.red,
@@ -225,6 +225,106 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
     );
   }
 
+  PreferredSizeWidget? _getAppBar() {
+    // 当显示分类页面时显示分类专用AppBar
+    if (_bottomNavIndex == 2) {
+      return _buildCategoryAppBar();
+    }
+    // 当显示个人页面时显示个人AppBar
+    else if (_bottomNavIndex == 4) {
+      return _buildProfileAppBar();
+    }
+    // 其他情况显示默认AppBar
+    else {
+      return _buildDefaultAppBar();
+    }
+  }
+
+  AppBar _buildCategoryAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      title: const Text(
+        '分类',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      centerTitle: true,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            // 这里可以添加切换到分类tab的逻辑
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '分类',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            // 这里可以添加切换到女优tab的逻辑
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '女优',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
   AppBar _buildDefaultAppBar() {
     return AppBar(
       backgroundColor: Colors.white,

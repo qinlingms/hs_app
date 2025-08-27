@@ -6,7 +6,7 @@ class ProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black,
+      color: Colors.white,
       child: SingleChildScrollView(
         child: Column(
           children: [

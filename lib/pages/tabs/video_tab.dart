@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../video_detail_page.dart';
 
 class VideoTab extends StatefulWidget {
   const VideoTab({super.key});
@@ -15,25 +16,25 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   final List<Map<String, dynamic>> _videoList = [
     {
       'title': '国内AV91 穿着T背教学的茄子中出钢琴老师#Tangtang',
-      'thumbnail': 'https://via.placeholder.com/300x200',
+      'thumbnail': null, // Remove external URL
       'duration': '0:40:12',
       'views': '2231',
     },
     {
       'title': '国产AV电影TM0109神母-孟若羽',
-      'thumbnail': 'https://via.placeholder.com/300x200',
+      'thumbnail': null, // Remove external URL
       'duration': '0:43:20',
       'views': '1231',
     },
     {
       'title': '视频名字视频名字视频名字视频名字',
-      'thumbnail': 'https://via.placeholder.com/300x200',
+      'thumbnail': null, // Remove external URL
       'duration': '1:20:20',
       'views': '1231',
     },
     {
       'title': '视频名字视频名字视频名字视频名字视频名字',
-      'thumbnail': 'https://via.placeholder.com/300x200',
+      'thumbnail': null, // Remove external URL
       'duration': '1:20:20',
       'views': '1231',
     },
@@ -107,117 +108,135 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   }
 
   Widget _buildVideoItem(Map<String, dynamic> video) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
+    return GestureDetector(
+      onTap: () {
+        // 点击视频项时跳转到视频详细页面
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VideoDetailPage(videoData: video),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 视频缩略图
-          Expanded(
-            flex: 3,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                color: Colors.grey[300],
-              ),
-              child: Stack(
-                children: [
-                  // 缩略图占位
-                  Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                      color: Colors.grey[300],
-                    ),
-                    child: const Icon(
-                      Icons.play_circle_outline,
-                      size: 40,
-                      color: Colors.white,
-                    ),
-                  ),
-                  // 播放次数
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 视频缩略图
+            Expanded(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  color: Colors.grey[300],
+                ),
+                child: Stack(
+                  children: [
+                    // 缩略图占位 - 使用纯色背景而不是网络图片
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.grey[400]!,
+                            Colors.grey[600]!,
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.play_arrow,
-                            color: Colors.white,
-                            size: 12,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            video['views'],
-                            style: const TextStyle(
+                      child: const Icon(
+                        Icons.play_circle_outline,
+                        size: 40,
+                        color: Colors.white,
+                      ),
+                    ),
+                    // 播放次数
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.play_arrow,
                               color: Colors.white,
-                              fontSize: 10,
+                              size: 12,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // 视频时长
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        video['duration'],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
+                            const SizedBox(width: 2),
+                            Text(
+                              video['views'],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // 视频标题
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                video['title'],
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                    // 视频时长
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          video['duration'],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-        ],
+            // 视频标题
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  video['title'],
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
