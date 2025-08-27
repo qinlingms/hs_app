@@ -1,14 +1,21 @@
 import 'dart:async';
+import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
+import 'package:app_hs/http/resp.dart';
+import 'package:app_hs/pages/example.dart';
 import 'package:app_hs/pages/home.dart';
+import 'package:app_hs/service/device_identifier_service.dart';
 import 'package:app_hs/service_locator.dart';
 import 'package:app_hs/utils/aes_decryptor.dart';
 import 'package:app_hs/utils/base64.dart';
+import 'package:app_hs/utils/device.dart';
 import 'package:app_hs/utils/hex_decoder.dart';
 import 'package:app_hs/utils/html_first_href_extractor.dart';
 import 'package:app_hs/utils/http_request_header.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+
+import '../log/logger.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -24,14 +31,25 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // 初始化基础服务
+    setupService();
     // 启动双向SSL初始化
     Future<bool> ok = _initMutualSSL();
     // 初始化倒计时
     ok.then((onValue) {
       if (onValue) {
-        _startCountdown();
+        // 检查是否是首次安装
+        Device.checkFirstLaunch().then((res) {
+          if (res) {
+            // 首次安装，调用安装接口
+            _callInstallApi();
+          } else {
+            _startCountdown();
+          }
+        });
       } else {
         // 初始化失败，跳转首页
+        logger.e("初始化失败，跳转首页");
       }
     });
   }
@@ -43,9 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // 发起请求时通过 options 设置头
       final response = await Dio().get(
         "http://c1.ysepan.com/f_ht/ajcx/wj.aspx?cz=dq&jsq=0&mlbh=1821707&wjpx=1&_dlmc=lplkkdiee&_dlmm=e10adc3949",
-        options: Options(
-          headers: HttpRequestHeader.getNormalHeader(),
-        ),
+        options: Options(headers: HttpRequestHeader.getNormalHeader()),
       );
       String input = response.data;
       int bracketIndex = input.indexOf(']');
@@ -56,17 +72,9 @@ class _SplashScreenState extends State<SplashScreen> {
       // 提取第一个 href
       String? href = HtmlFirstHrefExtractor.extractFirstHref(txt!);
       //print("提取到的 href: $href");
-      // 下载文件
-
       final responseFile = await Dio().get(
         href!,
-        options: Options(
-          headers: {
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, likeGecko) Chrome/129.0.0.0 Safari/537.36',
-            'Referer': 'http://lplkkdiee.ysepan.com/',
-          },
-        ),
+        options: Options(headers: HttpRequestHeader.getNormalHeader()),
       );
       //print("请求下载配置文件成功：${responseFile.data}");
       // 先尝试解码为字符串（适用于文本）
@@ -88,7 +96,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // 解密
       final decryptedData = AesDecryptor.decrypt(dataBytes, key128, iv128);
       //print('解密结果: $decryptedData');
-      setupServiceLocator(decryptedData);
+      setupMtlsService(decryptedData);
       return true;
       // 初始化服务定位器
     } on Exception catch (_) {
@@ -97,7 +105,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return false;
   }
 
-  void setupServiceLocator(baseUrl) {
+  void setupMtlsService(baseUrl) {
     // 注册MtlsSeparateCertsClient为单例
     getIt.registerLazySingleton<MtlsHttpClient>(
       () => MtlsHttpClient(
@@ -109,6 +117,32 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
+  void setupService(){
+        getIt.registerLazySingleton<DeviceIdentifierService>(
+      () => DeviceIdentifierService(),
+    );
+  }
+
+  // 首次安装调用接口
+  void _callInstallApi() {
+    MtlsHttpClient client = getIt<MtlsHttpClient>();
+    Future<ApiResponse?> resp = client.post(
+      Api.firstLaunch,
+      headers: HttpRequestHeader.getNormalHeader(),
+      data: 
+      {"os": "ios", "brand": "Iphone"},
+    );
+    resp.then((value) {
+      if (value == null || value.code != 200) {
+        // 调用失败，重置首次启动标记
+        Device.setFirstLaunch(true);
+      } else {
+        Device.setFirstLaunch(false);
+        _startCountdown();
+      }
+    });
+  }
+
   // 倒计时逻辑
   void _startCountdown() {
     // 初始化定时器，每秒更新一次倒计时
@@ -116,7 +150,7 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() {
         _countdownSeconds--;
       });
-
+      logger.d("倒计时: $_countdownSeconds");
       // 当倒计时结束时，跳转到主页
       if (_countdownSeconds <= 0) {
         _timer.cancel();
@@ -129,7 +163,8 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToHome() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
+      //MaterialPageRoute(builder: (context) => const HomePage()),
+      MaterialPageRoute(builder: (context) => const ExamplePage()),
     );
   }
 

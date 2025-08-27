@@ -1,7 +1,11 @@
+import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
+import 'package:app_hs/http/resp.dart';
 import 'package:app_hs/log/logger.dart';
 import 'package:app_hs/service_locator.dart';
-import 'package:dio/dio.dart';
+import 'package:app_hs/storage/login_info.dart';
+import 'package:app_hs/utils/http_request_data.dart';
+import 'package:app_hs/utils/http_request_header.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,21 +25,22 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     MtlsHttpClient client = getIt<MtlsHttpClient>();
-    Map<String, dynamic> dataObj = {
-      "appVer": "v0.0.1",
-      "resId": "111",
-      "timeStamp": DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      "data": {},
-    };
-    Map<String, String> headers = {"X-UUID": "11111"};
-    Future<Response?> future = client.post(
-      "/api/v1/login/anonymous",
-      headers: headers,
-      data: dataObj,
+    Future<ApiResponse?> future = client.post(
+      Api.anonymousLogin,
+      headers: HttpRequestHeader.getNormalHeader(),
+      data: HttpRequestData.build(data: {}),
     );
     future
         .then((response) {
-          logger.d("请求成功：$response");
+          if (response?.isSuccess == true) {
+            logger.d("请求成功：${response?.data}");
+            LoginInfo.saveLoginInfo(
+              sessionId: response?.data?[LoginInfo.sessionId] ?? '',
+              uid: response?.data?[LoginInfo.uid] ?? '',
+              authToken: response?.data?[LoginInfo.authToken] ?? '',
+              ttl: response?.data?[LoginInfo.ttl] ?? 0,
+            );
+          }
         })
         .catchError((error) {
           logger.d("请求失败：$error");

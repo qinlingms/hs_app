@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:app_hs/log/logger.dart';
+import 'package:app_hs/http/resp.dart';
+import 'package:app_hs/utils/http_request_data.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +17,8 @@ class MtlsHttpClient {
     required this.clientKeyPath,
     required this.baseUrl,
   });
+
+  Dio? _dioInstance;
   // 加载证书文件（从assets中读取）
   Future<SecurityContext> createSecurityContext() async {
     final context = SecurityContext(withTrustedRoots: false);
@@ -58,6 +62,14 @@ class MtlsHttpClient {
     return byteData.buffer.asUint8List();
   }
 
+    // 获取或创建 Dio 实例（单例模式）
+  Future<Dio> _getDioInstance() async {
+    if (_dioInstance == null) {
+      _dioInstance = await createDioClient();
+    }
+    return _dioInstance!;
+  }
+
   // 创建支持mTLS的Dio客户端
   Future<Dio> createDioClient() async {
     final context = await createSecurityContext();
@@ -75,42 +87,54 @@ class MtlsHttpClient {
     return dio;
   }
 
-  // 示例请求
-  Future<Response?> get(String uri) async {
+  // 修改get方法返回ApiResponse
+  Future<ApiResponse<Map<String, dynamic>>?> get(String uri) async {
     try {
-      final dio = await createDioClient();
+      final dio = await _getDioInstance();
       logger.d("get request url: $baseUrl$uri");
-      final response = await dio.get(baseUrl+uri);
+      final response = await dio.get(baseUrl + uri);
       logger.d('请求成功: ${response.data}');
-      return response;
+
+      // 解析响应为ApiResponse对象
+      if (response.data is Map<String, dynamic>) {
+        return ApiResponseHelper.fromJsonMap(response.data);
+      }
+      return null;
     } on HandshakeException catch (e) {
       logger.e('握手失败: $e');
-      // 常见原因：证书不匹配、CA未信任、客户端证书未正确配置
     } on DioException catch (e) {
       logger.e('请求错误: ${e.message}');
     }
     return null;
   }
 
-  Future<Response?> post(
+  // 修改post方法返回ApiResponse
+  Future<ApiResponse<Map<String, dynamic>>?> post(
     String uri, {
-    Map<String, String> headers = const {},
+    Map<String, dynamic> headers = const {},
     Map<String, dynamic> data = const {},
   }) async {
     try {
-      final dio = await createDioClient();
+      final dio = await _getDioInstance();
       logger.d("post request url: $baseUrl$uri");
+      logger.d("post request headers: $headers");
+      logger.d("post request data: $data");
+      Map<String, dynamic> requestData = HttpRequestData.build(data: data);
       final response = await dio.post(
         baseUrl + uri,
         options: Options(headers: headers),
-        data: data,
+        data: requestData,
       );
-      return response;
+      logger.d("post request response: ${response.data}");
+      // 解析响应为ApiResponse对象
+      if (response.data is Map<String, dynamic>) {
+        return ApiResponseHelper.fromJsonMap(response.data);
+      }
+      return null;
     } on HandshakeException catch (e) {
       logger.e('握手失败: $e');
-      // 常见原因：证书不匹配、CA未信任、客户端证书未正确配置
     } on DioException catch (e) {
-      logger.e('请求错误: $e');
+      logger.e('请求错误: ${e.message}');
     }
     return null;
   }
