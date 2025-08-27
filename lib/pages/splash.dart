@@ -131,9 +131,9 @@ class _SplashScreenState extends State<SplashScreen> {
       data: {"os": "ios", "brand": "Iphone"},
     );
     resp.then((value) {
-      if (value == null || value.code != 200) {
+      if (value == null || (value.code != 200 && value.code != 30021)) {
         // 调用失败，重置首次启动标记
-        Device.setFirstLaunch(true);
+        _startCountdown();
       } else {
         Device.setFirstLaunch(false);
         _startCountdown();
