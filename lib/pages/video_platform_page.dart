@@ -20,7 +20,7 @@ class VideoPlatformPage extends StatefulWidget {
 class _VideoPlatformPageState extends State<VideoPlatformPage> {
   int _selectedIndex = 0;
   int _bottomNavIndex = 0;
-  bool _isRefreshing = false;
+  // bool _isRefreshing = false;
   
   final List<String> _tabTitles = ['推荐', '游戏', '交友', '直播', '看片'];
 
@@ -32,7 +32,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
 
   Future<void> _onRefresh() async {
     setState(() {
-       _isRefreshing = true;
+      //  _isRefreshing = true;
     });
     
     logger.d('开始下拉刷新');

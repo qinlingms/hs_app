@@ -79,7 +79,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   };
   
   // 查询条件数据
-  final List<String> _filterTabs = ['推荐', '最新', '最热', '10分钟+'];
+  final List<String> _filterTabs = ['推荐', '最新', '最热'];
   final Map<String, int> _selectedFilters = {
     '热门推荐': 0,
     '乱伦换妻': 0,
