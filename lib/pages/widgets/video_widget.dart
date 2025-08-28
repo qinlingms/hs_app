@@ -8,7 +8,9 @@ class VideoWidget extends StatefulWidget {
 class _VideoWidgetState extends State<VideoWidget> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Container(
+      child: Text('视频'),
+    );
   }
 
   @override

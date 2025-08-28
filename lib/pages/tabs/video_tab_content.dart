@@ -1,4 +1,5 @@
 import 'package:app_hs/model/movie.dart';
+import 'package:app_hs/pages/widgets/video_widget.dart';
 import 'package:app_hs/service/movie_service.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,7 @@ class VideoTabContent extends StatefulWidget {
 
 // 视频列表
 class _VideoTabContentState extends State<VideoTabContent> {
-  List<Movie> _contentFuture= [];
+  List<Movie> _movies= [];
   bool _isLoading = false; // 当前Tab是否正在加载数据
   bool _hasLoaded = false; // 当前Tab是否已加载过数据
   @override
@@ -53,7 +54,7 @@ class _VideoTabContentState extends State<VideoTabContent> {
     setState(() {
       _isLoading = false;
       _hasLoaded = true;
-      _contentFuture = content;
+      _movies = content;
     });
   }
 
@@ -75,16 +76,15 @@ class _VideoTabContentState extends State<VideoTabContent> {
       onRefresh: () async => _loadContent(), // 下拉刷新
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _contentFuture.length,
+        itemCount: _movies.length,
         itemBuilder: (context, index) {
           return Card(
             elevation: 2,
             margin: const EdgeInsets.only(bottom: 12),
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                '${widget.menuId} 内容 ${index + 1}:\n${_contentFuture[index].title}',
-                style: const TextStyle(fontSize: 15),
+              child: VideoWidget(
+                
               ),
             ),
           );
