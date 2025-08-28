@@ -2,9 +2,7 @@ import 'dart:async';
 import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
 import 'package:app_hs/http/resp.dart';
-import 'package:app_hs/pages/video_platform_page.dart';
 import 'package:app_hs/pages/widgets/encrypted_image_widget.dart';
-import 'package:app_hs/pages/widgets/custom_video_player_widget.dart';
 import 'package:app_hs/service/device_identifier_service.dart';
 import 'package:app_hs/service_locator.dart';
 import 'package:app_hs/utils/aes_decryptor.dart';
@@ -163,10 +161,17 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.pushReplacement(
       context,
       //MaterialPageRoute(builder: (context) => const VideoPlatformPage()),
-      //MaterialPageRoute(builder: (context) => EncryptedImageExample(url: "http://192.168.3.84:9010/encrypted/2025/08/29/4e479718244d969dcf7805604d76b0cf742646def8a3c8d5c929067b8f212bc2/1961099978506514432.png")),
-      MaterialPageRoute(builder: (context) => EncryptedCustomVideoPlayer.createAESPlayer(
-        videoUrl: "https://192.168.3.84:9010/encrypted/2025/08/29/4e479718244d969dcf7805604d76b0cf742646def8a3c8d5c929067b8f212bc2/1961099978506514432.m3u8",
-      )),
+      MaterialPageRoute(builder: (context) => EncryptedImageExample(url: "http://192.168.3.84:9010/encrypted/2025/08/29/4e479718244d969dcf7805604d76b0cf742646def8a3c8d5c929067b8f212bc2/1961099978506514432.png")),
+      // MaterialPageRoute(builder: (context) => EncryptedCustomVideoPlayer.createAESPlayer(
+      //   videoUrl: "https://192.168.3.84:9010/encrypted/2025/08/29/4e479718244d969dcf7805604d76b0cf742646def8a3c8d5c929067b8f212bc2/1961099978506514432.m3u8",
+      // )),
+      // MaterialPageRoute(builder: (context) => const EncryptedMP4Player(
+      //   config: EncryptedVideoPlayerConfig(
+      //     videoUrl: "http://192.168.3.84:9010/hls/2025/08/28/a49edee4335e58391c4044ecbc34e3ff2106521877ff483bdb840e2db92f8306/1961128069760090112.m3u8",
+      //     format: EncryptedVideoFormat.hls,
+      //   ),
+
+      // )),
     );
   }
 
