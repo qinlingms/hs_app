@@ -1,5 +1,3 @@
-import 'package:app_hs/log/logger.dart';
-
 class Movie {
   String id;
   String title;
@@ -24,7 +22,6 @@ class Movie {
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
-    // logger.d("Movie.fromJson: $json");
     List<String> logoUrls = [];
     for (var item in json['logoUrl']) {
       logoUrls.add(item.toString());

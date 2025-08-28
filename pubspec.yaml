@@ -44,6 +44,8 @@ dependencies:
   logger: ^1.1.0  # 最新版本可查看pub.dev
   device_info_plus: ^9.0.0  # 请使用最新版本
   crypto: ^3.0.6
+  video_player: ^2.8.1
+  chewie: ^1.7.0  # 可选，提供更好的UI控制
 
 dev_dependencies:
   flutter_test:
