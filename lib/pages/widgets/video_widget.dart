@@ -16,6 +16,7 @@ class _VideoWidgetState extends State<VideoWidget> {
 
   Widget _buildVideoCard(Movie video) {
     return Container(
+      height: 200, // 给整个卡片一个固定高度
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(8),
@@ -24,70 +25,66 @@ class _VideoWidgetState extends State<VideoWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 视频缩略图
-          Expanded(
-            flex: 3,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey[800],
-                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-              ),
-              child: Stack(
-                children: [
-                  // 这里可以放置实际的图片
-                  Center(
-                    child: Icon(
-                      Icons.play_circle_outline,
-                      color: Colors.white,
-                      size: 40,
+          Container(
+            height: 140, // 固定缩略图高度
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+            ),
+            child: Stack(
+              children: [
+                // 这里可以放置实际的图片
+                Center(
+                  child: Icon(
+                    Icons.play_circle_outline,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                // 时长标签
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      video.duration,
+                      style: TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
-                  // 时长标签
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        video.duration,
+                ),
+                // 观看次数
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  child: Row(
+                    children: [
+                      Icon(Icons.play_arrow, color: Colors.white, size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        video.playCnt.toString(),
                         style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
-                    ),
+                    ],
                   ),
-                  // 观看次数
-                  Positioned(
-                    bottom: 8,
-                    left: 8,
-                    child: Row(
-                      children: [
-                        Icon(Icons.play_arrow, color: Colors.white, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          video.playCnt.toString(),
-                          style: TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           // 视频标题
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Text(
-                video.title,
-                style: TextStyle(color: Colors.white, fontSize: 12),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+          Container(
+            height: 60, // 固定标题区域高度
+            padding: EdgeInsets.all(8),
+            child: Text(
+              video.title,
+              style: TextStyle(color: Colors.white, fontSize: 12),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
