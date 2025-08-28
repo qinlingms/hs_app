@@ -20,7 +20,7 @@ class VideoPlatformPage extends StatefulWidget {
 class _VideoPlatformPageState extends State<VideoPlatformPage> {
   int _selectedIndex = 0;
   int _bottomNavIndex = 0;
-  // bool _isRefreshing = false;
+  bool _isRefreshing = false;
   
   final List<String> _tabTitles = ['推荐', '游戏', '交友', '直播', '看片'];
 
@@ -32,7 +32,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
 
   Future<void> _onRefresh() async {
     setState(() {
-      // _isRefreshing = true;
+       _isRefreshing = true;
     });
     
     logger.d('开始下拉刷新');
@@ -164,22 +164,24 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
     return Scaffold(
       backgroundColor: _bottomNavIndex == 4 ? Colors.black : Colors.grey[100],
       appBar: _getAppBar(),
-      body: RefreshIndicator(
-        onRefresh: _onRefresh,
-        color: Colors.red,
-        backgroundColor: Colors.white,
-        strokeWidth: 2.0,
-        displacement: 40.0,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            children: [
-              _buildBottomNavContent(),
-              const SizedBox(height: 100),
-            ],
+      body: _bottomNavIndex == 1 
+        ? const VideoTab() // 直接显示VideoTab，避免滚动冲突
+        : RefreshIndicator(
+            onRefresh: _onRefresh,
+            color: Colors.red,
+            backgroundColor: Colors.white,
+            strokeWidth: 2.0,
+            displacement: 40.0,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  _buildBottomNavContent(),
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.red,
