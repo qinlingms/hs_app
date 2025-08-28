@@ -1,3 +1,5 @@
+import 'package:app_hs/log/logger.dart';
+import 'package:app_hs/service/movie_service.dart';
 import 'package:flutter/material.dart';
 import '../video_detail_page.dart';
 
@@ -16,6 +18,9 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   int _currentBannerIndex = 0;
   bool _isHeaderVisible = true;
   bool _isAutoScrolling = false; // 添加标志来标识是否正在自动滚动
+
+  //加载中
+  bool isLoading = true;
   
   // 轮播广告数据
   final List<Map<String, dynamic>> _bannerAds = [
@@ -68,15 +73,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   ];
   
   // Tab页数据
-  final List<String> _mainTabs = ['热门推荐', '乱伦换妻', '中文原创', '日韩欧美','xxxx','sfsafa','sfadfafa','xxxxx890'];
-  
-  // 每个tab页的标签数据
-  final Map<String, List<String>> _tabTags = {
-    '热门推荐': ['强奸迷奸', '人兽猎奇', 'SM性虐', '多人群P'],
-    '乱伦换妻': ['萝莉少女', '尾随猥亵', '极品尤物', '反差婊狗'],
-    '中文原创': ['国产自拍', '网红主播', '学生制服', '熟女人妻'],
-    '日韩欧美': ['日本AV', '韩国主播', '欧美大片', '金发碧眼'],
-  };
+  List<String> _mainTabs = [];//['热门推荐', '乱伦换妻', '中文原创', '日韩欧美','xxxx','sfsafa','sfadfafa','xxxxx890'];
   
   // 查询条件数据
   final List<String> _filterTabs = ['推荐', '最新', '最热'];
@@ -97,6 +94,10 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    // 初始化时获取数据
+    fetchData();
+
     _bannerController = PageController();
     _tabController = TabController(length: _mainTabs.length, vsync: this);
     
@@ -119,6 +120,34 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     
     // 自动轮播
     _startAutoScroll();
+  }
+
+  // 获取数据
+  void fetchData() async{
+    try{
+      setState(() {
+        isLoading = true;
+      });
+      final res = await MovieService.menuList();
+      setState(() {
+        List<String> tabsList = [];
+        for(var item in res){
+          tabsList.add(item.display);
+        }
+        _mainTabs = tabsList;
+        
+        // 重新初始化TabController
+        _tabController?.dispose();
+        _tabController = TabController(length: _mainTabs.length, vsync: this);
+        
+        isLoading = false;
+      });
+    }catch(e){
+      logger.e("fetchData: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
   
   void _startAutoScroll() {
@@ -179,7 +208,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    if (_tabController == null || _headerAnimationController == null) {
+    if (_tabController == null || _headerAnimationController == null || _mainTabs.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.white,
         body: const Center(
@@ -522,8 +551,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     return Column(
       children: [
         // 标签区域
-        _buildTagsSection(currentTabName),
-        
+        //_buildTagsSection(currentTabName),
         // 查询条件
         _buildFilterSection(currentTabName),
       ],
@@ -539,49 +567,6 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
           // 视频列表
           _buildVideoList(tabName),
         ],
-      ),
-    );
-  }
-  
-  // 标签区域
-  Widget _buildTagsSection(String tabName) {
-    final tags = _tabTags[tabName] ?? [];
-    final selectedTags = _selectedTags[tabName] ?? [];
-    
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: tags.map((tag) {
-          final isSelected = selectedTags.contains(tag);
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                if (isSelected) {
-                  _selectedTags[tabName]?.remove(tag);
-                } else {
-                  _selectedTags[tabName]?.add(tag);
-                }
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.orange : Colors.grey[800],
-                borderRadius: BorderRadius.circular(16),
-                border: isSelected ? Border.all(color: Colors.orange) : null,
-              ),
-              child: Text(
-                tag,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[400],
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }
