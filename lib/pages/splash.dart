@@ -3,6 +3,7 @@ import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
 import 'package:app_hs/http/resp.dart';
 import 'package:app_hs/pages/video_platform_page.dart';
+import 'package:app_hs/pages/widgets/encrypted_image_widget.dart';
 import 'package:app_hs/service/device_identifier_service.dart';
 import 'package:app_hs/service_locator.dart';
 import 'package:app_hs/utils/aes_decryptor.dart';
@@ -161,7 +162,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const VideoPlatformPage()),
-      //MaterialPageRoute(builder: (context) => const VideoListPage()),
+      //MaterialPageRoute(builder: (context) => EncryptedImageExample(url: "http://192.168.3.84:9010/encrypted/2025/08/29/4e479718244d969dcf7805604d76b0cf742646def8a3c8d5c929067b8f212bc2/1961099978506514432.png")),
     );
   }
 

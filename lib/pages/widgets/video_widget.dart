@@ -29,7 +29,14 @@ class _VideoWidgetState extends State<VideoWidget> {
             height: 140, // 固定缩略图高度
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.grey[800],
+              image: DecorationImage(
+                image: const NetworkImage(
+                  "http://192.168.3.84:9010/public/2025/08/29/4add2d8f5325be0da908a9d102d8522309c0d20ee6fbf269d6f3bba452482fba/1961105026275880960.png",
+                ),
+                fit: BoxFit.cover, // 覆盖容器，可能裁剪
+                opacity: 0.8,
+              ),
+              color: Colors.black,
               borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
             ),
             child: Stack(
