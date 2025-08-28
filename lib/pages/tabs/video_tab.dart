@@ -256,7 +256,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
                 pinned: true,
                 delegate: _SliverTabBarDelegate(
                   TabBar(
-                    controller: _tabController!,
+                    controller: _tabController,
                     isScrollable: true,
                     tabAlignment: TabAlignment.start,
                     indicator: BoxDecoration(
@@ -532,7 +532,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   // 构建固定的标签和查询条件
   Widget _buildFixedTagsAndFilters() {
     // 为 _tabController 添加空值检查，确保 _menuList 不为空
-    if (_tabController == null || _menuList.isEmpty) {
+    if (_menuList.isEmpty) {
       return const SizedBox.shrink();
     }
     
