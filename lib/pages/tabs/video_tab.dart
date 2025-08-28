@@ -1,9 +1,8 @@
 import 'package:app_hs/log/logger.dart';
 import 'package:app_hs/model/menu.dart';
-import 'package:app_hs/model/movie.dart';
+import 'package:app_hs/pages/tabs/video_tab_content.dart';
 import 'package:app_hs/service/movie_service.dart';
 import 'package:flutter/material.dart';
-import '../video_detail_page.dart';
 
 class VideoTab extends StatefulWidget {
   const VideoTab({super.key});
@@ -13,8 +12,8 @@ class VideoTab extends StatefulWidget {
 }
 
 class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
-  PageController? _bannerController;
-  TabController? _tabController;
+  late PageController _bannerController;
+  late TabController _tabController;
   AnimationController? _headerAnimationController;
   Animation<double>? _headerAnimation;
   int _currentBannerIndex = 0;
@@ -77,20 +76,10 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   // 储存完整的菜单数据
   List<Menu> _menuList = [];
 
-  // menuId,movie列表
-  Map<String, List<Movie>> _tabVideos = {};
-
   // 查询条件数据
   final List<String> _filterTabs = ['推荐', '最新', '最热'];
   // menuId, 选中的查询条件
   final Map<String, int> _selectedFilters = {};
-
-  final Map<String, List<String>> _selectedTags = {
-    '热门推荐': [],
-    '乱伦换妻': [],
-    '中文原创': [],
-    '日韩欧美': [],
-  };
 
   @override
   void initState() {
@@ -98,10 +87,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
     // 初始化时获取数据
     fetchData();
-
     _bannerController = PageController();
-    //_tabController = TabController(length: _mainTabs.length, vsync: this);
-
     // 初始化头部动画控制器
     _headerAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -129,23 +115,14 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
         isLoading = true;
       });
       final res = await MovieService.menuList();
-      //加载第一个视频
-      List<Movie> movies = [];
-      if (res.isNotEmpty) {
-        movies = await MovieService.moviePopularList(res[0].categoryId);
-      }
       setState(() {
         _menuList = res;
-        //第一个视频
-        if (_menuList.isNotEmpty) {
-          _tabVideos[_menuList[0].menuId] = movies;
-        }
         // 重新初始化TabController
-        _tabController?.dispose();
-        _tabController = TabController(length: _menuList.length, vsync: this);
-
-        // 监听tab 切换事件
-        _tabController?.addListener(_onTabChanged);
+        _tabController = TabController(
+          length: _menuList.length,
+          vsync: this,
+          initialIndex: 0,
+        );
         isLoading = false;
       });
     } catch (e) {
@@ -156,43 +133,23 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     }
   }
 
-  void _onTabChanged() async{
-    if (_tabController?.indexIsChanging == true) {
-      int currentIndex = _tabController!.index;
-      _loadTabVideos(currentIndex);
-      return;
-    }
-  }
+  // void _onTabChanged() async {
+  //   if (_tabController?.indexIsChanging == true) {
+  //     return;
+  //   }
+  // }
 
-  void _loadTabVideos(int tabIndex) async {
-    if (tabIndex >= _menuList.length) {
-      return;
-    }
-    String menuId = _menuList[tabIndex].menuId;
-    String categoryId = _menuList[tabIndex].categoryId;
-    if (_tabVideos.containsKey(menuId)) {
-      return;
-    }
-    try {
-      final videos = await MovieService.moviePopularList(categoryId);
-      setState(() {
-        _tabVideos[menuId] = videos;
-      });
-    } catch (e) {
-      logger.e("加载视频列表失败: $e");
-    }
-  }
-
+  // 自动滚动
   void _startAutoScroll() {
     Future.delayed(const Duration(seconds: 3), () {
-      if (mounted && _bannerController?.hasClients == true) {
+      if (mounted && _bannerController.hasClients == true) {
         int nextPage = (_currentBannerIndex + 1) % _bannerAds.length;
 
         // 设置自动滚动标志
         _isAutoScrolling = true;
 
         _bannerController
-            ?.animateToPage(
+            .animateToPage(
               nextPage,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
@@ -209,8 +166,8 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _bannerController?.dispose();
-    _tabController?.dispose();
+    _bannerController.dispose();
+    _tabController.dispose();
     _headerAnimationController?.dispose();
     super.dispose();
   }
@@ -243,8 +200,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    if (_tabController == null ||
-        _headerAnimationController == null ||
+    if (_headerAnimationController == null ||
         _menuList.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.white,
@@ -322,17 +278,19 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
                     tabs:
                         _menuList.map((tab) => Tab(text: tab.display)).toList(),
                   ),
-                  _tabController!,
+                  _tabController,
                   _buildFixedTagsAndFilters,
                 ),
               ),
             ];
           },
           body: TabBarView(
-            controller: _tabController!,
+            controller: _tabController,
             children:
                 _menuList
-                    .map((tab) => _buildTabContent(tab.categoryId))
+                    .map(
+                      (tab) => _buildTabContent(tab.menuId),
+                    ) // 修改：传递menuId而不是categoryId
                     .toList(),
           ),
         ),
@@ -342,23 +300,11 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
   // 1. 顶部滚动广告
   Widget _buildScrollingBanner() {
-    if (_bannerController == null) {
-      return Container(
-        height: 180,
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey[800],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Container(
       height: 180,
       margin: const EdgeInsets.all(16),
       child: PageView.builder(
-        controller: _bannerController!,
+        controller: _bannerController,
         onPageChanged: (index) {
           setState(() {
             _currentBannerIndex = index;
@@ -585,7 +531,12 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
   // 构建固定的标签和查询条件
   Widget _buildFixedTagsAndFilters() {
-    final currentTabName = _menuList[_tabController?.index ?? 0].display;
+    // 为 _tabController 添加空值检查，确保 _menuList 不为空
+    if (_tabController == null || _menuList.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    final currentTabName = _menuList[_tabController!.index].display;
 
     return Column(
       children: [
@@ -602,10 +553,16 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 视频列表
-          _buildVideoList(_tabVideos[menuId]),
-        ],
+        children:
+            _menuList
+                .map(
+                  (item) => VideoTabContent(
+                    menuId: item.menuId,
+                    tabController: _tabController,
+                    tabIndex: _menuList.indexOf(item),
+                  ),
+                )
+                .toList(),
       ),
     );
   }
@@ -657,104 +614,6 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
                 ),
               );
             }).toList(),
-      ),
-    );
-  }
-
-  // 通过menuId获取视频数量
-  int _getVideoCount(String menuId) {
-    return 1;
-  }
-
-  // 视频列表
-  Widget _buildVideoList(List<Movie>? movies) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1.2,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        itemCount: movies?.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              // 跳转到视频详情页
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const VideoDetailPage(videoData: {}),
-                ),
-              );
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[700],
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(8),
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          const Center(
-                            child: Icon(
-                              Icons.play_circle_outline,
-                              color: Colors.white,
-                              size: 40,
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 8,
-                            right: 8,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.7),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${(index + 1) * 5 + 10}:${(index + 1) * 3 + 20}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      movies?[index].title ?? '',
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
       ),
     );
   }
