@@ -550,20 +550,16 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
   // 每个Tab页的内容（只包含视频列表）
   Widget _buildTabContent(String menuId) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children:
-            _menuList
-                .map(
-                  (item) => VideoTabContent(
-                    menuId: item.menuId,
-                    tabController: _tabController,
-                    tabIndex: _menuList.indexOf(item),
-                  ),
-                )
-                .toList(),
-      ),
+    // Find the specific VideoTabContent for this menuId
+    final menuIndex = _menuList.indexWhere((item) => item.menuId == menuId);
+    if (menuIndex == -1) {
+      return const Center(child: Text('Menu not found'));
+    }
+    
+    return VideoTabContent(
+      menuId: menuId,
+      tabController: _tabController,
+      tabIndex: menuIndex,
     );
   }
 
