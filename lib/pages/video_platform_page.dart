@@ -1,3 +1,6 @@
+import 'package:app_hs/model/login_info.dart';
+import 'package:app_hs/service/login_service.dart';
+import 'package:app_hs/storage/login_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:app_hs/log/logger.dart';
 import 'dart:async';
@@ -21,27 +24,37 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
   int _selectedIndex = 0;
   int _bottomNavIndex = 0;
   // bool _isRefreshing = false;
-  
+
   final List<String> _tabTitles = ['推荐', '游戏', '交友', '直播', '看片'];
 
   @override
   void initState() {
     super.initState();
     logger.d('VideoPlatformPage 初始化');
+    //调用匿名登录接口
+    _callAnonymousLoginApi();
+  }
+
+  void _callAnonymousLoginApi() async {
+    LoginInfo? loginInfo = await LoginService.anonymousLogin();
+    if (loginInfo != null) {
+      // 登录成功
+      LoginStorage.saveLoginInfo(sessionId: loginInfo.sessionId, uid: "0", authToken: loginInfo.authToken, ttl: loginInfo.ttl);
+    }
   }
 
   Future<void> _onRefresh() async {
     setState(() {
       //  _isRefreshing = true;
     });
-    
+
     logger.d('开始下拉刷新');
-    
+
     try {
       await Future.delayed(const Duration(seconds: 2));
-      
+
       logger.d('下拉刷新完成');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -53,7 +66,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
       }
     } catch (e) {
       logger.e('下拉刷新失败: $e');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -71,7 +84,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
       }
     }
   }
-  
+
   Widget _buildTabContent() {
     switch (_selectedIndex) {
       case 0:
@@ -88,7 +101,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
         return const RecommendTab();
     }
   }
-  
+
   Widget _buildBottomNavContent() {
     switch (_bottomNavIndex) {
       case 0:
@@ -103,57 +116,64 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
         return _buildMainContent();
     }
   }
-  
+
   Widget _buildMainContent() {
     return Column(
       children: [
         const BannerWidget(),
-        
+
         Container(
           height: 50,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _tabTitles.asMap().entries.map((entry) {
-                int index = entry.key;
-                String title = entry.value;
-                bool isSelected = index == _selectedIndex;
-                
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                    logger.d('切换到标签页: $title (索引: $index)');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    margin: const EdgeInsets.only(right: 16),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.red : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected ? Colors.red : Colors.grey,
-                        width: 1,
+              children:
+                  _tabTitles.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    String title = entry.value;
+                    bool isSelected = index == _selectedIndex;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedIndex = index;
+                        });
+                        logger.d('切换到标签页: $title (索引: $index)');
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
+                        margin: const EdgeInsets.only(right: 16),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.red : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected ? Colors.red : Colors.grey,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                            fontWeight:
+                                isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    );
+                  }).toList(),
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         _buildTabContent(),
       ],
     );
@@ -164,52 +184,41 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
     return Scaffold(
       backgroundColor: _bottomNavIndex == 4 ? Colors.black : Colors.grey[100],
       appBar: _getAppBar(),
-      body: _bottomNavIndex == 1 
-        ? const VideoTab() // 直接显示VideoTab，避免滚动冲突
-        : RefreshIndicator(
-            onRefresh: _onRefresh,
-            color: Colors.red,
-            backgroundColor: Colors.white,
-            strokeWidth: 2.0,
-            displacement: 40.0,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                children: [
-                  _buildBottomNavContent(),
-                  const SizedBox(height: 100),
-                ],
+      body:
+          _bottomNavIndex == 1
+              ? const VideoTab() // 直接显示VideoTab，避免滚动冲突
+              : RefreshIndicator(
+                onRefresh: _onRefresh,
+                color: Colors.red,
+                backgroundColor: Colors.white,
+                strokeWidth: 2.0,
+                displacement: 40.0,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      _buildBottomNavContent(),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         currentIndex: _bottomNavIndex,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '导航',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.video_library),
-            label: '视频',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.apps),
-            label: '分类',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '我的',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: '导航'),
+          BottomNavigationBarItem(icon: Icon(Icons.video_library), label: '视频'),
+          BottomNavigationBarItem(icon: Icon(Icons.apps), label: '分类'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: '我的'),
         ],
         onTap: (index) {
           setState(() {
             _bottomNavIndex = index;
           });
-          
+
           if (index == 1) {
             logger.d('显示视频内容');
           } else {
@@ -251,6 +260,7 @@ class _VideoPlatformPageState extends State<VideoPlatformPage> {
       centerTitle: true,
     );
   }
+
   AppBar _buildDefaultAppBar() {
     return AppBar(
       backgroundColor: Colors.white,

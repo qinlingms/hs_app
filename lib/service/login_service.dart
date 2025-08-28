@@ -1,18 +1,21 @@
 import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
-import 'package:app_hs/http/resp.dart';
+import 'package:app_hs/model/login_info.dart';
 import 'package:app_hs/service_locator.dart';
 
 class LoginService {
-  Future<ApiResponse?> login() async {
+  static Future<LoginInfo?> anonymousLogin() async {
     MtlsHttpClient client = getIt<MtlsHttpClient>();
-    Future<ApiResponse?> resp = client.post(
-      Api.login,
-      data: {
-        "username": "admin",
-        "password": "123456",
-      },
-    );
-    return resp;
+    final resp = await client.post(Api.anonymousLogin, data: {});
+    if (resp == null || resp.isFailure) {
+      return null;
+    }
+    if (resp.isSuccess) {
+      final data = resp.data;
+      if (data != null) {
+        return LoginInfo.fromJson(data);
+      }
+    }
+    return null;
   }
 }

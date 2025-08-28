@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginInfo{
+class LoginStorage{
     static const sessionId = 'sessionId';
     static const uid = "uid";
     static const authToken = "authToken";
@@ -13,42 +13,42 @@ class LoginInfo{
         required int ttl,
     }) async{
       final prefs = await SharedPreferences.getInstance();
-      prefs.setString(LoginInfo.sessionId, sessionId);
-      prefs.setString(LoginInfo.uid, uid);
-      prefs.setString(LoginInfo.authToken, authToken);
-      prefs.setInt(LoginInfo.ttl, ttl);
+      prefs.setString(LoginStorage.sessionId, sessionId);
+      prefs.setString(LoginStorage.uid, uid);
+      prefs.setString(LoginStorage.authToken, authToken);
+      prefs.setInt(LoginStorage.ttl, ttl);
     }
 
     static Future<void> clearLoginInfo() async{
       final prefs = await SharedPreferences.getInstance();
-      prefs.remove(LoginInfo.sessionId);
-      prefs.remove(LoginInfo.uid);
-      prefs.remove(LoginInfo.authToken);
-      prefs.remove(LoginInfo.ttl);
+      prefs.remove(LoginStorage.sessionId);
+      prefs.remove(LoginStorage.uid);
+      prefs.remove(LoginStorage.authToken);
+      prefs.remove(LoginStorage.ttl);
     }
 
     static Future<String?> getSessionId() async{
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(LoginInfo.sessionId);
+      return prefs.getString(LoginStorage.sessionId);
     }
 
     static Future<String?> getUid() async{
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(LoginInfo.uid);
+      return prefs.getString(LoginStorage.uid);
     }
 
     static Future<String?> getAuthToken() async{
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(LoginInfo.authToken);
+      return prefs.getString(LoginStorage.authToken);
     }
 
     static Future<int?> getTtl() async{
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getInt(LoginInfo.ttl);
+      return prefs.getInt(LoginStorage.ttl);
     }
 
     static Future<bool> isLogin() async{
       final prefs = await SharedPreferences.getInstance();
-      return prefs.containsKey(LoginInfo.sessionId);
+      return prefs.containsKey(LoginStorage.sessionId);
     }
 }

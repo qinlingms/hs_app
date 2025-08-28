@@ -43,6 +43,7 @@ dependencies:
   encrypt: ^5.0.1  # 最新版本可查看pub.dev
   logger: ^1.1.0  # 最新版本可查看pub.dev
   device_info_plus: ^9.0.0  # 请使用最新版本
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:

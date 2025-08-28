@@ -5,7 +5,6 @@ import 'package:app_hs/model/menu.dart';
 import 'package:app_hs/model/movie.dart';
 import 'package:app_hs/model/tag.dart';
 import 'package:app_hs/service_locator.dart';
-import 'package:app_hs/utils/http_request_header.dart';
 
 class MovieService {
   // 菜单列表
@@ -14,7 +13,6 @@ class MovieService {
     try {
       final resp = await client.post(
         Api.movieMenu,
-        headers: HttpRequestHeader.getNormalHeader(),
         data: {},
       );
       List<Menu> menus = [];
@@ -32,15 +30,18 @@ class MovieService {
       return [];
     }
   }
-  
+
   // 点击次数视频列表
   static Future<List<Movie>> moviePopularList(String categoryId) async {
     MtlsHttpClient client = getIt<MtlsHttpClient>();
     try {
       final resp = await client.post(
         "${Api.category}/$categoryId/popular",
-        headers: HttpRequestHeader.getNormalHeader(),
-        data: {},
+        sign: true,
+        data: {
+          "pageIdx": 1,
+          "pageCnt": 10,
+        },
       );
       List<Movie> data = [];
       if (resp == null || resp.isFailure) {
@@ -57,13 +58,13 @@ class MovieService {
       return [];
     }
   }
+
   // tags 分类
   static Future<List<Tag>> tags(String categoryId) async {
     MtlsHttpClient client = getIt<MtlsHttpClient>();
     try {
       final resp = await client.post(
         "${Api.category}/$categoryId/tag_list",
-        headers: HttpRequestHeader.getNormalHeader(),
         data: {},
       );
       List<Tag> tagsList = [];

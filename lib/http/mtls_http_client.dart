@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:app_hs/log/logger.dart';
 import 'package:app_hs/http/resp.dart';
 import 'package:app_hs/utils/http_request_data.dart';
+import 'package:app_hs/utils/http_request_header.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/services.dart';
@@ -62,7 +64,7 @@ class MtlsHttpClient {
     return byteData.buffer.asUint8List();
   }
 
-    // 获取或创建 Dio 实例（单例模式）
+  // 获取或创建 Dio 实例（单例模式）
   Future<Dio> _getDioInstance() async {
     if (_dioInstance == null) {
       _dioInstance = await createDioClient();
@@ -111,19 +113,26 @@ class MtlsHttpClient {
   // 修改post方法返回ApiResponse
   Future<ApiResponse<Map<String, dynamic>>?> post(
     String uri, {
-    Map<String, dynamic> headers = const {},
+    bool sign = false,
     Map<String, dynamic> data = const {},
   }) async {
     try {
       final dio = await _getDioInstance();
+      Map<String, dynamic> requestData = HttpRequestData.build(data: data);
+      String dataStr = jsonEncode(requestData);
+      Map<String, dynamic> headers = {};
+      if (sign) {
+        headers = await HttpRequestHeader.getSignHeader(dataStr);
+      } else {
+        headers = HttpRequestHeader.getNormalHeader();
+      }
       logger.d("post request url: $baseUrl$uri");
       logger.d("post request headers: $headers");
-      logger.d("post request data: $data");
-      Map<String, dynamic> requestData = HttpRequestData.build(data: data);
+      logger.d("post request data: $dataStr");
       final response = await dio.post(
         baseUrl + uri,
         options: Options(headers: headers),
-        data: requestData,
+        data: dataStr,
       );
       logger.d("post request response: ${response.data}");
       // 解析响应为ApiResponse对象

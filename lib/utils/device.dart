@@ -7,7 +7,7 @@ class Device {
 
   // 设备唯一标识
   static String deviceUUid(){
-    logger.d("deviceUUid: ",getIt<DeviceIdentifierService>().getUniqueDeviceId());
+    //logger.d("deviceUUid: ",getIt<DeviceIdentifierService>().getUniqueDeviceId());
     return "SDFFCXSFFFC1C8dF";
   }
 

@@ -127,7 +127,6 @@ class _SplashScreenState extends State<SplashScreen> {
     MtlsHttpClient client = getIt<MtlsHttpClient>();
     Future<ApiResponse?> resp = client.post(
       Api.firstLaunch,
-      headers: HttpRequestHeader.getNormalHeader(),
       data: {"os": "ios", "brand": "Iphone"},
     );
     resp.then((value) {
