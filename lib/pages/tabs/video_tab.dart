@@ -11,7 +11,11 @@ class VideoTab extends StatefulWidget {
 class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   PageController? _bannerController;
   TabController? _tabController;
+  AnimationController? _headerAnimationController;
+  Animation<double>? _headerAnimation;
   int _currentBannerIndex = 0;
+  bool _isHeaderVisible = true;
+  bool _isAutoScrolling = false; // 添加标志来标识是否正在自动滚动
   
   // 轮播广告数据
   final List<Map<String, dynamic>> _bannerAds = [
@@ -96,6 +100,23 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     _bannerController = PageController();
     _tabController = TabController(length: _mainTabs.length, vsync: this);
     
+    // 初始化头部动画控制器
+    _headerAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    
+    _headerAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _headerAnimationController!,
+      curve: Curves.easeInOut,
+    ));
+    
+    // 初始状态显示头部
+    _headerAnimationController!.forward();
+    
     // 自动轮播
     _startAutoScroll();
   }
@@ -104,11 +125,19 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted && _bannerController?.hasClients == true) {
         int nextPage = (_currentBannerIndex + 1) % _bannerAds.length;
+        
+        // 设置自动滚动标志
+        _isAutoScrolling = true;
+        
         _bannerController?.animateToPage(
           nextPage,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-        );
+        ).then((_) {
+          // 动画完成后重置标志
+          _isAutoScrolling = false;
+        });
+        
         _startAutoScroll();
       }
     });
@@ -118,12 +147,39 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   void dispose() {
     _bannerController?.dispose();
     _tabController?.dispose();
+    _headerAnimationController?.dispose();
     super.dispose();
+  }
+
+  // 处理滑动事件
+  bool _handleScrollNotification(ScrollNotification notification) {
+    // 如果正在自动滚动，忽略滑动事件
+    if (_isAutoScrolling) {
+      return false;
+    }
+    
+    // 只处理来自NestedScrollView的滑动事件，忽略来自广告栏PageView的滑动
+    if (notification.depth != 0) {
+      return false;
+    }
+    
+    if (notification is ScrollUpdateNotification) {
+      // 向上滑动（delta > 0）隐藏头部，向下滑动不再显示头部
+      if (notification.scrollDelta! > 10 && _isHeaderVisible) {
+        // 向上滑动，隐藏头部
+        setState(() {
+          _isHeaderVisible = false;
+        });
+        _headerAnimationController!.reverse();
+      }
+      // 移除向下滑动显示头部的逻辑
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_tabController == null) {
+    if (_tabController == null || _headerAnimationController == null) {
       return Scaffold(
         backgroundColor: Colors.white,
         body: const Center(
@@ -134,54 +190,82 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: NestedScrollView(
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return [
-            // 顶部滚动广告 - 可以被滑动隐藏
-            SliverToBoxAdapter(
-              child: _buildScrollingBanner(),
-            ),
-            
-            // 2排广告板块 - 可以被滑动隐藏
-            SliverToBoxAdapter(
-              child: _buildAdBlocks(),
-            ),
-            
-            // Tab栏 + 标签 + 查询条件 - 固定在顶部
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverTabBarDelegate(
-                TabBar(
-                  controller: _tabController!,
-                  isScrollable: true, // 添加这行以支持左右滑动
-                  tabAlignment: TabAlignment.start, // 添加这行以左对齐标签
-                  indicator: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  dividerColor: Colors.transparent,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.grey[400],
-                  labelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal,
-                  ),
-                  tabs: _mainTabs.map((tab) => Tab(text: tab)).toList(),
+      body: NotificationListener<ScrollNotification>(
+        onNotification: _handleScrollNotification,
+        child: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              // 顶部滚动广告 - 可以被滑动隐藏
+              SliverToBoxAdapter(
+                child: AnimatedBuilder(
+                  animation: _headerAnimation!,
+                  builder: (context, child) {
+                    return SizeTransition(
+                      sizeFactor: _headerAnimation!,
+                      child: FadeTransition(
+                        opacity: _headerAnimation!,
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (notification) => true, // 阻止广告栏的滑动事件向上传播
+                          child: _buildScrollingBanner(),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                _tabController!,
-                _buildFixedTagsAndFilters,
               ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController!,
-          children: _mainTabs.map((tab) => _buildTabContent(tab)).toList(),
+              
+              // 2排广告板块 - 可以被滑动隐藏
+              SliverToBoxAdapter(
+                child: AnimatedBuilder(
+                  animation: _headerAnimation!,
+                  builder: (context, child) {
+                    return SizeTransition(
+                      sizeFactor: _headerAnimation!,
+                      child: FadeTransition(
+                        opacity: _headerAnimation!,
+                        child: _buildAdBlocks(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              
+              // Tab栏 + 标签 + 查询条件 - 固定在顶部
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverTabBarDelegate(
+                  TabBar(
+                    controller: _tabController!,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    indicator: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.grey[400],
+                    labelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    tabs: _mainTabs.map((tab) => Tab(text: tab)).toList(),
+                  ),
+                  _tabController!,
+                  _buildFixedTagsAndFilters,
+                ),
+              ),
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController!,
+            children: _mainTabs.map((tab) => _buildTabContent(tab)).toList(),
+          ),
         ),
       ),
     );
