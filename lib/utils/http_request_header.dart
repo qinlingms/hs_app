@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:app_hs/log/logger.dart';
 import 'package:app_hs/storage/login_storage.dart';
@@ -19,13 +20,16 @@ class HttpRequestHeader {
     String sessionId = await LoginStorage.getSessionId() ?? "";
     final salt =
         md5
-            .convert(utf8.encoder.convert(authToken))
-            .toString(); /*注意此处不转hex字符串*/
-    String signStr = salt + data;
-    String sign = sha256.convert(utf8.encoder.convert(signStr)).toString();
-    String base64Sign = base64Encode(utf8.encode(sign));
+            .convert(utf8.encoder.convert(authToken));/*注意此处不转hex字符串*/
 
-    logger.d("authToken: $authToken; sessionId: $sessionId; salt: $salt; data:$data salt+data: $signStr sign: $sign base64Sign: $base64Sign");
+    final dataBytes = utf8.encoder.convert(data);
+    List<int> saltAndDataBytes = [];
+    saltAndDataBytes.addAll(salt.bytes);
+    saltAndDataBytes.addAll(dataBytes);
+    Digest sign = sha256.convert(saltAndDataBytes);
+    String base64Sign = base64Encode(sign.bytes);
+
+    logger.d("authToken: $authToken; sessionId: $sessionId; base64Sign: $base64Sign");
     return {
       "X-UUID": Device.deviceUUid(),
       'User-Agent': userAgent(),

@@ -20,7 +20,8 @@ class MovieService {
         return menus;
       }
       if (resp.isSuccess) {
-        for (var item in resp.data!['list'] as List) {
+        final array = resp.data!['list'] as List;
+        for (var item in array) {
           menus.add(Menu.fromJson(item));
         }
       }
@@ -48,7 +49,8 @@ class MovieService {
         return data;
       }
       if (resp.isSuccess) {
-        for (var item in resp.data!['list'] as List) {
+        final array = resp.data!['list'] as List;
+        for (var item in array) {
           data.add(Movie.fromJson(item));
         }
       }

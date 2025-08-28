@@ -1,9 +1,11 @@
-class Movie{
+import 'package:app_hs/log/logger.dart';
+
+class Movie {
   String id;
   String title;
   int likeCnt;
   int playCnt;
-  String logoUrl;
+  List<String> logoUrl;
   String duration;
   String previewUrl;
   bool free;
@@ -21,17 +23,22 @@ class Movie{
     required this.ctime,
   });
 
-   factory Movie.fromJson(Map<String, dynamic> json) {
+  factory Movie.fromJson(Map<String, dynamic> json) {
+    // logger.d("Movie.fromJson: $json");
+    List<String> logoUrls = [];
+    for (var item in json['logoUrl']) {
+      logoUrls.add(item.toString());
+    }
     return Movie(
-      id: json['id'],
-      title: json['title'],
-      likeCnt: json['likeCnt'],
-      playCnt: json['playCnt'],
-      logoUrl: json['logoUrl'],
-      duration: json['duration'],
-      previewUrl: json['previewUrl'],
-      free: json['free'],
-      ctime: json['ctime'],
+      id: json['id'] as String,
+      title: json['title'] as String,
+      likeCnt: json['likeCnt'] as int,
+      playCnt: json['playCnt'] as int,
+      logoUrl: logoUrls,
+      duration: json['duration'] as String,
+      previewUrl: json['previewUrl'] as String,
+      free: json['free'] as bool,
+      ctime: json['ctime'] as int,
     );
   }
 }
