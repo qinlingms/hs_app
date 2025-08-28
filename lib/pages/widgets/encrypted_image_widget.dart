@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:app_hs/utils/aes_decryptor.dart';
 import 'package:app_hs/utils/hex_decoder.dart';
@@ -187,8 +186,8 @@ class _GenericEncryptedImageViewerState
 
 // 使用示例 - 根据你的实际加密方式修改
 class EncryptedImageExample extends StatelessWidget {
-  String url;
-  EncryptedImageExample({super.key, required this.url});
+  final String url;
+  const EncryptedImageExample({super.key, required this.url});
 
   @override
   Widget build(BuildContext context) {
