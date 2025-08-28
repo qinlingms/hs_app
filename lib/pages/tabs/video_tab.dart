@@ -576,7 +576,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     final selectedFilter = _selectedFilters[tabName] ?? 0;
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0), // 减少垂直margin从8到4
       child: Row(
         children: _filterTabs.asMap().entries.map((entry) {
           final index = entry.key;
@@ -790,10 +790,10 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverTabBarDelegate(this._tabBar, this._tabController, this._buildTagsAndFilters);
 
   @override
-  double get minExtent => _tabBar.preferredSize.height + 160; // 增加高度以避免溢出
+  double get minExtent => _tabBar.preferredSize.height + 80; // 减少高度避免遮挡
 
   @override
-  double get maxExtent => _tabBar.preferredSize.height + 160;
+  double get maxExtent => _tabBar.preferredSize.height + 80;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {

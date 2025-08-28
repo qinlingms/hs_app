@@ -2,6 +2,7 @@ import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
 import 'package:app_hs/log/logger.dart';
 import 'package:app_hs/model/menu.dart';
+import 'package:app_hs/model/movie.dart';
 import 'package:app_hs/model/tag.dart';
 import 'package:app_hs/service_locator.dart';
 import 'package:app_hs/utils/http_request_header.dart';
@@ -31,7 +32,31 @@ class MovieService {
       return [];
     }
   }
-
+  
+  // 点击次数视频列表
+  static Future<List<Movie>> moviePopularList(String categoryId) async {
+    MtlsHttpClient client = getIt<MtlsHttpClient>();
+    try {
+      final resp = await client.post(
+        "${Api.category}/$categoryId/popular",
+        headers: HttpRequestHeader.getNormalHeader(),
+        data: {},
+      );
+      List<Movie> data = [];
+      if (resp == null || resp.isFailure) {
+        return data;
+      }
+      if (resp.isSuccess) {
+        for (var item in resp.data!['list'] as List) {
+          data.add(Movie.fromJson(item));
+        }
+      }
+      return data;
+    } catch (e) {
+      logger.e("moviePopular: $e");
+      return [];
+    }
+  }
   // tags 分类
   static Future<List<Tag>> tags(String categoryId) async {
     MtlsHttpClient client = getIt<MtlsHttpClient>();
