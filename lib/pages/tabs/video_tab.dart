@@ -64,7 +64,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
   ];
   
   // Tab页数据
-  final List<String> _mainTabs = ['热门推荐', '乱伦换妻', '中文原创', '日韩欧美'];
+  final List<String> _mainTabs = ['热门推荐', '乱伦换妻', '中文原创', '日韩欧美','xxxx','sfsafa','sfadfafa','xxxxx890'];
   
   // 每个tab页的标签数据
   final Map<String, List<String>> _tabTags = {
@@ -123,21 +123,66 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    if (_tabController == null) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          // 1. 顶部滚动广告
-          _buildScrollingBanner(),
-          
-          // 2. 2排广告板块
-          _buildAdBlocks(),
-          
-          // 3. 可左右滑动切换的Tab页
-          Expanded(
-            child: _buildTabSection(),
-          ),
-        ],
+      body: NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return [
+            // 顶部滚动广告 - 可以被滑动隐藏
+            SliverToBoxAdapter(
+              child: _buildScrollingBanner(),
+            ),
+            
+            // 2排广告板块 - 可以被滑动隐藏
+            SliverToBoxAdapter(
+              child: _buildAdBlocks(),
+            ),
+            
+            // Tab栏 + 标签 + 查询条件 - 固定在顶部
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverTabBarDelegate(
+                TabBar(
+                  controller: _tabController!,
+                  isScrollable: true, // 添加这行以支持左右滑动
+                  tabAlignment: TabAlignment.start, // 添加这行以左对齐标签
+                  indicator: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  dividerColor: Colors.transparent,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.grey[400],
+                  labelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  tabs: _mainTabs.map((tab) => Tab(text: tab)).toList(),
+                ),
+                _tabController!,
+                _buildFixedTagsAndFilters,
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
+          controller: _tabController!,
+          children: _mainTabs.map((tab) => _buildTabContent(tab)).toList(),
+        ),
       ),
     );
   }
@@ -386,78 +431,35 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     );
   }
   
-  // 3. 可左右滑动切换的Tab页
-  Widget _buildTabSection() {
-    if (_tabController == null) {
-      return Container(
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+  // 构建固定的标签和查询条件
+  Widget _buildFixedTagsAndFilters() {
+    final currentTabName = _mainTabs[_tabController?.index ?? 0];
     
     return Column(
       children: [
-        // Tab栏
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: BoxDecoration(
-            color: Colors.grey[900],
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: TabBar(
-            controller: _tabController!,
-            indicator: BoxDecoration(
-              color: Colors.orange,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.grey[400],
-            labelStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-            ),
-            tabs: _mainTabs.map((tab) => Tab(text: tab)).toList(),
-          ),
-        ),
+        // 标签区域
+        _buildTagsSection(currentTabName),
         
-        // Tab内容
-        Expanded(
-          child: TabBarView(
-            controller: _tabController!,
-            children: _mainTabs.map((tab) => _buildTabContent(tab)).toList(),
-          ),
-        ),
+        // 查询条件
+        _buildFilterSection(currentTabName),
       ],
     );
   }
   
-  // 4. 每个Tab页的内容（标签 + 查询条件 + 视频列表）
+  // 每个Tab页的内容（只包含视频列表）
   Widget _buildTabContent(String tabName) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 4.1 标签区域
-          _buildTagsSection(tabName),
-          
-          // 4.2 查询条件
-          _buildFilterSection(tabName),
-          
-          // 4.3 视频列表
+          // 视频列表
           _buildVideoList(tabName),
         ],
       ),
     );
   }
   
-  // 4.1 标签区域
+  // 标签区域
   Widget _buildTagsSection(String tabName) {
     final tags = _tabTags[tabName] ?? [];
     final selectedTags = _selectedTags[tabName] ?? [];
@@ -500,7 +502,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     );
   }
   
-  // 4.2 查询条件
+  // 查询条件
   Widget _buildFilterSection(String tabName) {
     final selectedFilter = _selectedFilters[tabName] ?? 0;
     
@@ -546,7 +548,7 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
     );
   }
   
-  // 4.3 视频列表
+  // 视频列表
   Widget _buildVideoList(String tabName) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -707,5 +709,53 @@ class _VideoTabState extends State<VideoTab> with TickerProviderStateMixin {
       return tabTitles[index];
     }
     return '$tabName 视频 ${index + 1}';
+  }
+}
+
+// 自定义SliverPersistentHeaderDelegate用于固定Tab栏、标签和查询条件
+class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar _tabBar;
+  final TabController _tabController;
+  final Widget Function() _buildTagsAndFilters;
+
+  _SliverTabBarDelegate(this._tabBar, this._tabController, this._buildTagsAndFilters);
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height + 160; // 增加高度以避免溢出
+
+  @override
+  double get maxExtent => _tabBar.preferredSize.height + 160;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Colors.white, // 将背景改为透明
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // 添加这行以防止Column占用过多空间
+        children: [
+          // Tab栏
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: _tabBar,
+            ),
+          ),
+          
+          // 标签和查询条件
+          Flexible( // 使用Flexible包装以防止溢出
+            child: _buildTagsAndFilters(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverTabBarDelegate oldDelegate) {
+    return true; // 需要重建以响应Tab切换
   }
 }
