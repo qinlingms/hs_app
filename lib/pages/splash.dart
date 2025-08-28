@@ -4,7 +4,7 @@ import 'package:app_hs/http/mtls_http_client.dart';
 import 'package:app_hs/http/resp.dart';
 import 'package:app_hs/pages/video_platform_page.dart';
 import 'package:app_hs/pages/widgets/encrypted_image_widget.dart';
-import 'package:app_hs/pages/widgets/hls_player_widget.dart';
+import 'package:app_hs/pages/widgets/custom_video_player_widget.dart';
 import 'package:app_hs/service/device_identifier_service.dart';
 import 'package:app_hs/service_locator.dart';
 import 'package:app_hs/utils/aes_decryptor.dart';

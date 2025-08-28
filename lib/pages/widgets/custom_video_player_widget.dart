@@ -60,8 +60,8 @@ class CustomVideoPlayer extends StatefulWidget {
 }
 
 class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
-  late VideoPlayerController _videoPlayerController;
-  late ChewieController _chewieController;
+  VideoPlayerController? _videoPlayerController;
+  ChewieController? _chewieController;
   bool _isLoading = true;
   String? _errorMessage;
   String? _tempVideoPath;
@@ -87,45 +87,47 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
         await _handleNormalVideo();
       }
 
-      // 配置Chewie控制器
-      _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController,
-        autoPlay: true,
-        looping: false,
-        allowFullScreen: true,
-        allowMuting: true,
-        showControlsOnInitialize: false,
-        materialProgressColors: ChewieProgressColors(
-          playedColor: Colors.blue,
-          handleColor: Colors.blue,
-          backgroundColor: Colors.grey,
-          bufferedColor: Colors.lightBlueAccent,
-        ),
-        placeholder: const Center(
-          child: CircularProgressIndicator(),
-        ),
-        errorBuilder: (context, errorMessage) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error, color: Colors.red, size: 48),
-                const SizedBox(height: 16),
-                Text(
-                  '播放错误: $errorMessage',
-                  style: const TextStyle(color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _initializePlayer,
-                  child: const Text('重试'),
-                ),
-              ],
-            ),
-          );
-        },
-      );
+      // 确保控制器已初始化后再配置Chewie控制器
+      if (_videoPlayerController != null) {
+        _chewieController = ChewieController(
+          videoPlayerController: _videoPlayerController!,
+          autoPlay: true,
+          looping: false,
+          allowFullScreen: true,
+          allowMuting: true,
+          showControlsOnInitialize: false,
+          materialProgressColors: ChewieProgressColors(
+            playedColor: Colors.blue,
+            handleColor: Colors.blue,
+            backgroundColor: Colors.grey,
+            bufferedColor: Colors.lightBlueAccent,
+          ),
+          placeholder: const Center(
+            child: CircularProgressIndicator(),
+          ),
+          errorBuilder: (context, errorMessage) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  Text(
+                    '播放错误: $errorMessage',
+                    style: const TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _initializePlayer,
+                    child: const Text('重试'),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      }
 
       setState(() {
         _isLoading = false;
@@ -148,7 +150,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
       httpHeaders: widget.headers ?? {},
     );
 
-    await _videoPlayerController.initialize();
+    await _videoPlayerController!.initialize();
   }
 
   Future<void> _handleEncryptedVideo() async {
@@ -168,7 +170,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
       File(_tempVideoPath!),
     );
 
-    await _videoPlayerController.initialize();
+    await _videoPlayerController!.initialize();
   }
 
   Future<Uint8List> _downloadEncryptedVideo() async {
@@ -261,8 +263,8 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   void dispose() {
     super.dispose();
     // 释放资源
-    _videoPlayerController.dispose();
-    _chewieController.dispose();
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
     // 清理临时文件
     _cleanupTempFile();
   }
@@ -270,8 +272,8 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: _videoPlayerController.value.isInitialized 
-          ? _videoPlayerController.value.aspectRatio 
+      aspectRatio: _videoPlayerController?.value.isInitialized == true
+          ? _videoPlayerController!.value.aspectRatio 
           : 16 / 9,
       child: _buildPlayerContent(),
     );
@@ -293,27 +295,41 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
 
     if (_errorMessage != null) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error, color: Colors.red, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              '加载失败: $_errorMessage',
-              style: const TextStyle(color: Colors.white),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _initializePlayer,
-              child: const Text('重试'),
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  '加载失败: $_errorMessage',
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _initializePlayer,
+                child: const Text('重试'),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    return Chewie(controller: _chewieController);
+    if (_chewieController != null) {
+      return Chewie(controller: _chewieController!);
+    }
+
+    return const Center(
+      child: CircularProgressIndicator(),
+    );
   }
 }
 
