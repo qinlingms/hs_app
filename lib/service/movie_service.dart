@@ -1,9 +1,9 @@
 import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
 import 'package:app_hs/log/logger.dart';
-import 'package:app_hs/model/menu.dart';
-import 'package:app_hs/model/movie.dart';
-import 'package:app_hs/model/tag.dart';
+import 'package:app_hs/models/menu.dart';
+import 'package:app_hs/models/movie.dart';
+import 'package:app_hs/models/tag.dart';
 import 'package:app_hs/service_locator.dart';
 
 class MovieService {

@@ -1,6 +1,6 @@
 import 'package:app_hs/http/api.dart';
 import 'package:app_hs/http/mtls_http_client.dart';
-import 'package:app_hs/model/login_info.dart';
+import 'package:app_hs/models/login_info.dart';
 import 'package:app_hs/service_locator.dart';
 
 class LoginService {

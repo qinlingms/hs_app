@@ -1,4 +1,4 @@
-import 'package:app_hs/model/movie.dart';
+import 'package:app_hs/models/movie.dart';
 import 'package:app_hs/pages/widgets/encrypted_image_widget.dart';
 import 'package:flutter/material.dart';
 

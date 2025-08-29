@@ -1,4 +1,4 @@
-import 'package:app_hs/model/login_info.dart';
+import 'package:app_hs/models/login_info.dart';
 import 'package:app_hs/service/login_service.dart';
 import 'package:app_hs/storage/login_storage.dart';
 import 'package:flutter/material.dart';

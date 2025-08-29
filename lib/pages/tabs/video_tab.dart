@@ -1,5 +1,5 @@
 import 'package:app_hs/log/logger.dart';
-import 'package:app_hs/model/menu.dart';
+import 'package:app_hs/models/menu.dart';
 import 'package:app_hs/pages/tabs/video_tab_content.dart';
 import 'package:app_hs/service/movie_service.dart';
 import 'package:flutter/material.dart';
