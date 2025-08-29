@@ -125,7 +125,17 @@ class _GenericEncryptedImageViewerState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('加密图片查看器')),
-      body: Center(child: _buildContent()),
+      body: SingleChildScrollView(
+        child: Container(
+          width: double.infinity,
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height - 
+                      AppBar().preferredSize.height - 
+                      MediaQuery.of(context).padding.top,
+          ),
+          child: Center(child: _buildContent()),
+        ),
+      ),
     );
   }
 
@@ -146,13 +156,17 @@ class _GenericEncryptedImageViewerState
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.error_outline, color: Colors.red, size: 48),
             const SizedBox(height: 16),
-            Text(
-              '处理失败: $_errorMessage',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red, fontSize: 16),
+            Flexible(
+              child: Text(
+                '处理失败: $_errorMessage',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+                overflow: TextOverflow.visible,
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
